@@ -12,7 +12,11 @@ const DEFAULT_SETTINGS: SystemSettings = {
   commonRam: ['8GB', '16GB'],
   commonStorage: ['256GB SSD', '512GB SSD'],
   commonCpu: ['Intel Core i5', 'Intel Core i7'],
-  commonLicenseTypes: ['มีลิขสิทธิ์', 'ไม่มีลิขสิทธิ์']
+  commonLicenseTypes: ['มีลิขสิทธิ์', 'ไม่มีลิขสิทธิ์'],
+  commonAssetNames: [],
+  commonBrands: [],
+  commonModels: [],
+  commonAssetTypes: ['คอมพิวเตอร์', 'จอภาพ', 'เครื่องพิมพ์', 'UPS', 'อุปกรณ์เครือข่าย', 'อื่นๆ']
 };
 
 interface AssetContextType {
