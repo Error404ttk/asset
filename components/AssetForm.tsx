@@ -354,8 +354,22 @@ const AssetForm: React.FC = () => {
     return <FileText size={18} />;
   };
 
-  // Filter available assets for replacement (Exclude current, exclude already disposed if strictly enforcing)
-  const availableOldAssets = assets.filter(a => a.id !== id && a.status !== AssetStatus.SOLD && a.status !== AssetStatus.WITHDRAWN);
+  // Filter available assets for replacement (Exclude current, exclude already disposed/replaced, unless it's the one linked to this asset)
+  const availableOldAssets = assets.filter(a => {
+    // Cannot select itself
+    if (a.id === id) return false;
+
+    // If this asset is the one currently linked as replaced by this asset (in edit mode), allow it even if status is SOLD
+    // Check against the initial data's replacedAssetId if available, or the current state if not strictly bound to initial
+    // But to be safe, if a.replacementAssetId points to THIS asset (id), it's valid.
+    if (id && a.replacementAssetId === id) return true;
+
+    // Otherwise, exclude if SOLD, WITHDRAWN, or Already Replaced by someone else
+    if (a.status === AssetStatus.SOLD || a.status === AssetStatus.WITHDRAWN) return false;
+    if (a.replacementAssetId) return false;
+
+    return true;
+  });
   const selectedOldAssetInfo = assets.find(a => a.id === selectedOldAssetId);
 
   return (
