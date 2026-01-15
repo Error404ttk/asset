@@ -42,7 +42,7 @@ const AssetForm: React.FC = () => {
     name: '',
     assetCode: '',
     fiscalYear: currentYearBE.toString(),
-    type: AssetType.COMPUTER,
+    type: AssetTypeLabels[AssetType.COMPUTER] as unknown as AssetType,
     status: AssetStatus.NORMAL,
     brand: '',
     model: '',
