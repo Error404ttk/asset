@@ -121,9 +121,16 @@ const AssetForm: React.FC = () => {
   }, [showAddMaintenance, formData.status]);
 
   // Pre-fill asset types from settings or defaults
+  // Priority: 1. Settings from DB (if user customized) 2. Thai Enum Labels 3. English Enum
   const assetTypeOptions = (settings.commonAssetTypes && settings.commonAssetTypes.length > 0)
     ? settings.commonAssetTypes
     : Object.values(AssetTypeLabels);
+
+  // Debugging: Log options to console to verify
+  useEffect(() => {
+    // Console log disabled for production cleaniness, but good to know data flow
+    // console.log('Current Asset Type Options:', assetTypeOptions);
+  }, [assetTypeOptions]);
 
   const handleTempIdToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;
