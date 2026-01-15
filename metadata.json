@@ -1,0 +1,7 @@
+{
+  "name": "ระบบสำรวจครุภัณฑ์คอมพิวเตอร์",
+  "description": "A modern, responsive asset management system designed for government agencies to track computer equipment, manage lifecycles, and monitor maintenance history.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
