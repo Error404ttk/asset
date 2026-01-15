@@ -29,6 +29,9 @@ router.get('/', async (req, res) => {
             commonStorage: [],
             commonCpu: [],
             commonLicenseTypes: [],
+            commonAssetNames: [],
+            commonBrands: [],
+            commonModels: [],
             ...settings
         };
 

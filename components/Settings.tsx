@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Building, List, Bell, Shield, Mail, Plus, X, Users, Trash2, UserPlus, CheckCircle, AlertCircle, Cpu, Server, HardDrive, Edit } from 'lucide-react';
+import { Save, Building, List, Bell, Shield, Mail, Plus, X, Users, Trash2, UserPlus, CheckCircle, AlertCircle, Cpu, Server, HardDrive, Edit, Tag, Package } from 'lucide-react';
 import { useAssets } from '../context/AssetContext';
 import { SystemSettings } from '../types';
 import { api } from '../services/api';
@@ -35,6 +35,9 @@ const Settings: React.FC<SettingsProps> = ({ initialTab }) => {
   const [newStorage, setNewStorage] = useState('');
   const [newCpu, setNewCpu] = useState('');
   const [newLicenseType, setNewLicenseType] = useState('');
+  const [newAssetName, setNewAssetName] = useState('');
+  const [newBrand, setNewBrand] = useState('');
+  const [newModel, setNewModel] = useState('');
 
   // User Management State
   const [systemUsers, setSystemUsers] = useState<{ id: number; username: string; name: string; email: string; role: string; status: string }[]>([]);
@@ -275,9 +278,87 @@ const Settings: React.FC<SettingsProps> = ({ initialTab }) => {
           {activeTab === 'specs' && (
             <div className="space-y-8">
               <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-lg font-bold text-slate-800">จัดการข้อมูลทางเทคนิค (Technical Specs)</h2>
-                <p className="text-sm text-slate-500">กำหนดตัวเลือกมาตรฐานสำหรับสเปกคอมพิวเตอร์ เพื่อความสะดวกในการกรอกข้อมูล</p>
+                <h2 className="text-lg font-bold text-slate-800">จัดการข้อมูลตัวเลือก (Master Data & Specs)</h2>
+                <p className="text-sm text-slate-500">กำหนดตัวเลือกมาตรฐานสำหรับชื่อครุภัณฑ์, ยี่ห้อ, รุ่น และสเปกคอมพิวเตอร์</p>
               </div>
+
+              {/* Asset Names */}
+              <div className="space-y-4">
+                <h3 className="font-bold text-slate-700 flex items-center gap-2"><List size={18} /> ชื่อรายการครุภัณฑ์ (Asset Names)</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="เช่น คอมพิวเตอร์ All-in-One, เครื่องพิมพ์เลเซอร์"
+                    className="flex-1 border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                    value={newAssetName}
+                    onChange={(e) => setNewAssetName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addItem('commonAssetNames', newAssetName, setNewAssetName)}
+                  />
+                  <button onClick={() => addItem('commonAssetNames', newAssetName, setNewAssetName)} className="bg-slate-800 text-white px-3 rounded-lg hover:bg-slate-700"><Plus size={18} /></button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(formData.commonAssetNames || []).map((item, i) => (
+                    <span key={i} className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm border border-slate-200 flex items-center gap-1">
+                      {item}
+                      <button onClick={() => removeItem('commonAssetNames', item)} className="hover:text-red-500 ml-1"><X size={14} /></button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 my-4"></div>
+
+              {/* Brands */}
+              <div className="space-y-4">
+                <h3 className="font-bold text-slate-700 flex items-center gap-2"><Tag size={18} /> ยี่ห้อ (Brands)</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="เช่น Dell, HP, Lenovo"
+                    className="flex-1 border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                    value={newBrand}
+                    onChange={(e) => setNewBrand(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addItem('commonBrands', newBrand, setNewBrand)}
+                  />
+                  <button onClick={() => addItem('commonBrands', newBrand, setNewBrand)} className="bg-slate-800 text-white px-3 rounded-lg hover:bg-slate-700"><Plus size={18} /></button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(formData.commonBrands || []).map((item, i) => (
+                    <span key={i} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm border border-indigo-100 flex items-center gap-1">
+                      {item}
+                      <button onClick={() => removeItem('commonBrands', item)} className="hover:text-red-500 ml-1"><X size={14} /></button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 my-4"></div>
+
+              {/* Models */}
+              <div className="space-y-4">
+                <h3 className="font-bold text-slate-700 flex items-center gap-2"><Package size={18} /> รุ่น (Models)</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="เช่น OptiPlex 3080, LaserJet Pro M404dn"
+                    className="flex-1 border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                    value={newModel}
+                    onChange={(e) => setNewModel(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addItem('commonModels', newModel, setNewModel)}
+                  />
+                  <button onClick={() => addItem('commonModels', newModel, setNewModel)} className="bg-slate-800 text-white px-3 rounded-lg hover:bg-slate-700"><Plus size={18} /></button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(formData.commonModels || []).map((item, i) => (
+                    <span key={i} className="bg-teal-50 text-teal-700 px-3 py-1 rounded-full text-sm border border-teal-100 flex items-center gap-1">
+                      {item}
+                      <button onClick={() => removeItem('commonModels', item)} className="hover:text-red-500 ml-1"><X size={14} /></button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 my-4"></div>
 
               {/* Operating Systems */}
               <div className="space-y-4">

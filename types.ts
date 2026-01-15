@@ -109,6 +109,10 @@ export interface SystemSettings {
   commonStorage: string[];
   commonCpu: string[];
   commonLicenseTypes: string[];
+  // Master Data
+  commonAssetNames: string[];
+  commonBrands: string[];
+  commonModels: string[];
 }
 
 export interface StatCardProps {

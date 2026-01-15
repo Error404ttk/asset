@@ -91,7 +91,10 @@ export const api = {
         commonRam: [],
         commonStorage: [],
         commonCpu: [],
-        commonLicenseTypes: []
+        commonLicenseTypes: [],
+        commonAssetNames: [],
+        commonBrands: [],
+        commonModels: []
       };
     }
     return response.json();
