@@ -701,7 +701,7 @@ const AssetForm: React.FC = () => {
                     {previewImageUrl || formData.imageUrl ? (
                       <div className="relative w-full h-48">
                         <img
-                          src={previewImageUrl || `http://localhost:3008${formData.imageUrl}`}
+                          src={previewImageUrl || (formData.imageUrl ? `http://${window.location.hostname}:3008${formData.imageUrl}` : '')}
                           alt="Asset Preview"
                           className="w-full h-full object-contain rounded-lg"
                         />
