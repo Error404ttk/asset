@@ -1,6 +1,14 @@
 import { Asset, SystemSettings, AssetLog } from '../types';
 
-const API_BASE_URL = 'http://localhost:3008/api';
+const getBaseUrl = () => {
+  // Check if running in browser
+  if (typeof window !== 'undefined') {
+    return `http://${window.location.hostname}:3008/api`;
+  }
+  return 'http://localhost:3008/api';
+};
+
+const API_BASE_URL = getBaseUrl();
 
 // Helper to get current user Name or Username from localStorage
 const getCurrentUsername = () => {
