@@ -443,6 +443,21 @@ const AssetList: React.FC = () => {
                       <span className="font-medium text-slate-800">{selectedAsset.os || '-'}</span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-slate-500">License:</span>
+                      <span className="font-medium text-slate-800">
+                        {selectedAsset.licenseType ? (
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
+                             ${selectedAsset.licenseType === 'OEM' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
+                             ${selectedAsset.licenseType === 'Volume' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''}
+                             ${selectedAsset.licenseType === 'FPP' ? 'bg-green-50 text-green-700 border-green-200' : ''}
+                             ${!['OEM', 'Volume', 'FPP'].includes(selectedAsset.licenseType) ? 'bg-slate-50 text-slate-700 border-slate-200' : ''}
+                           `}>
+                            {selectedAsset.licenseType}
+                          </span>
+                        ) : '-'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-slate-500">S/N:</span>
                       <span className="font-medium text-slate-800 font-mono">{selectedAsset.serialNumber || '-'}</span>
                     </div>
