@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Building, List, Bell, Shield, Mail, Plus, X, Users, Trash2, UserPlus, CheckCircle, AlertCircle, Cpu, Server, HardDrive, Edit, Tag, Package } from 'lucide-react';
+import { Save, Building, List, Bell, Shield, Mail, Plus, X, Users, Trash2, UserPlus, CheckCircle, AlertCircle, Cpu, Server, HardDrive, Edit, Tag, Package, Layers } from 'lucide-react';
 import { useAssets } from '../context/AssetContext';
 import { SystemSettings } from '../types';
 import { api } from '../services/api';
@@ -38,6 +38,7 @@ const Settings: React.FC<SettingsProps> = ({ initialTab }) => {
   const [newAssetName, setNewAssetName] = useState('');
   const [newBrand, setNewBrand] = useState('');
   const [newModel, setNewModel] = useState('');
+  const [newAssetType, setNewAssetType] = useState('');
 
   // User Management State
   const [systemUsers, setSystemUsers] = useState<{ id: number; username: string; name: string; email: string; role: string; status: string }[]>([]);
@@ -353,6 +354,32 @@ const Settings: React.FC<SettingsProps> = ({ initialTab }) => {
                     <span key={i} className="bg-teal-50 text-teal-700 px-3 py-1 rounded-full text-sm border border-teal-100 flex items-center gap-1">
                       {item}
                       <button onClick={() => removeItem('commonModels', item)} className="hover:text-red-500 ml-1"><X size={14} /></button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 my-4"></div>
+
+              {/* Asset Types */}
+              <div className="space-y-4">
+                <h3 className="font-bold text-slate-700 flex items-center gap-2"><Layers size={18} /> ประเภทครุภัณฑ์ (Asset Types)</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="เช่น คอมพิวเตอร์, เครื่องพิมพ์, โปรเจคเตอร์"
+                    className="flex-1 border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                    value={newAssetType}
+                    onChange={(e) => setNewAssetType(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addItem('commonAssetTypes', newAssetType, setNewAssetType)}
+                  />
+                  <button onClick={() => addItem('commonAssetTypes', newAssetType, setNewAssetType)} className="bg-slate-800 text-white px-3 rounded-lg hover:bg-slate-700"><Plus size={18} /></button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(formData.commonAssetTypes || []).map((item, i) => (
+                    <span key={i} className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-sm border border-orange-100 flex items-center gap-1">
+                      {item}
+                      <button onClick={() => removeItem('commonAssetTypes', item)} className="hover:text-red-500 ml-1"><X size={14} /></button>
                     </span>
                   ))}
                 </div>

@@ -94,7 +94,8 @@ export const api = {
         commonLicenseTypes: [],
         commonAssetNames: [],
         commonBrands: [],
-        commonModels: []
+        commonModels: [],
+        commonAssetTypes: []
       };
     }
     return response.json();

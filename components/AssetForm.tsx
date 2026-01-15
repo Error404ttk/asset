@@ -120,7 +120,11 @@ const AssetForm: React.FC = () => {
     }
   }, [showAddMaintenance, formData.status]);
 
-  // Handle Temp ID Toggle
+  // Pre-fill asset types from settings or defaults
+  const assetTypeOptions = (settings.commonAssetTypes && settings.commonAssetTypes.length > 0)
+    ? settings.commonAssetTypes
+    : Object.values(AssetTypeLabels);
+
   const handleTempIdToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;
     setIsTempAssetCode(isChecked);
@@ -318,16 +322,21 @@ const AssetForm: React.FC = () => {
     };
   }, [previewImageUrl]);
 
+  // Helper to check if type matches "Computer" logic (Enum or Thai Label)
+  const isComputerType = (type: string | undefined) => {
+    return type === AssetType.COMPUTER || type === AssetTypeLabels[AssetType.COMPUTER]; // "COMPUTER" or "คอมพิวเตอร์"
+  };
+
   // Helper to get icon for specs tab
   const getSpecsIcon = () => {
-    switch (formData.type) {
-      case AssetType.COMPUTER: return <Laptop size={18} />;
-      case AssetType.MONITOR: return <Monitor size={18} />;
-      case AssetType.PRINTER: return <Printer size={18} />;
-      case AssetType.NETWORK: return <Wifi size={18} />;
-      case AssetType.UPS: return <Server size={18} />;
-      default: return <FileText size={18} />;
-    }
+    // Simple check based on string inclusion for flexibility
+    const typeStr = (formData.type || '').toString();
+    if (typeStr === AssetType.COMPUTER || typeStr === AssetTypeLabels[AssetType.COMPUTER]) return <Laptop size={18} />;
+    if (typeStr === AssetType.MONITOR || typeStr === AssetTypeLabels[AssetType.MONITOR]) return <Monitor size={18} />;
+    if (typeStr === AssetType.PRINTER || typeStr === AssetTypeLabels[AssetType.PRINTER]) return <Printer size={18} />;
+    if (typeStr === AssetType.NETWORK || typeStr === AssetTypeLabels[AssetType.NETWORK]) return <Wifi size={18} />;
+    if (typeStr === AssetType.UPS || typeStr === AssetTypeLabels[AssetType.UPS]) return <Server size={18} />;
+    return <FileText size={18} />;
   };
 
   // Filter available assets for replacement (Exclude current, exclude already disposed if strictly enforcing)
@@ -623,14 +632,13 @@ const AssetForm: React.FC = () => {
                   <label className="block text-sm font-bold text-slate-800 mb-2">ประเภทและหมวดหมู่</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">ประเภทครุภัณฑ์ (Asset Type)</label>
-                      <select
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none bg-white font-medium"
-                        value={formData.type}
-                        onChange={(e) => setFormData({ ...formData, type: e.target.value as AssetType })}
-                      >
-                        {Object.values(AssetType).map(t => <option key={t} value={t}>{AssetTypeLabels[t]}</option>)}
-                      </select>
+                      <Combobox
+                        label="ประเภทครุภัณฑ์ (Asset Type)"
+                        value={formData.type || ''}
+                        onChange={(val) => setFormData({ ...formData, type: val as any })}
+                        options={assetTypeOptions}
+                        placeholder="เลือกประเภทครุภัณฑ์"
+                      />
                       <p className="text-xs text-slate-400 mt-1">ใช้สำหรับกำหนดแบบฟอร์มข้อมูลทางเทคนิค</p>
                     </div>
 
@@ -745,7 +753,7 @@ const AssetForm: React.FC = () => {
                 </div>
 
                 {/* Conditional Fields based on Asset Type */}
-                {formData.type === AssetType.COMPUTER && (
+                {(formData.type === AssetType.COMPUTER || formData.type === AssetTypeLabels[AssetType.COMPUTER]) && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">CPU (Processor)</label>

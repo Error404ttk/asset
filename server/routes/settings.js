@@ -32,6 +32,7 @@ router.get('/', async (req, res) => {
             commonAssetNames: [],
             commonBrands: [],
             commonModels: [],
+            commonAssetTypes: [],
             ...settings
         };
 

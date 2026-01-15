@@ -113,6 +113,7 @@ export interface SystemSettings {
   commonAssetNames: string[];
   commonBrands: string[];
   commonModels: string[];
+  commonAssetTypes: string[];
 }
 
 export interface StatCardProps {
