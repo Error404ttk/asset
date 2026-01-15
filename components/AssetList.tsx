@@ -14,7 +14,8 @@ import {
   Cpu,
   Monitor,
   HardDrive,
-  RefreshCcw
+  RefreshCcw,
+  Lock
 } from 'lucide-react';
 import { AssetStatus, AssetType, AssetStatusLabels, AssetTypeLabels } from '../types';
 import { Link } from 'react-router-dom';
@@ -62,6 +63,9 @@ const AssetList: React.FC = () => {
 
     return matchesYear && matchesStatus && matchesType && matchesSearch;
   });
+
+  // Pre-calculate replaced asset IDs for locking
+  const replacedAssetIds = new Set(assets.map(a => a.replacedAssetId).filter(Boolean));
 
   return (
     <div className="space-y-6">
@@ -151,64 +155,82 @@ const AssetList: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredAssets.length > 0 ? (
-                filteredAssets.map((asset) => (
-                  <tr key={asset.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-mono font-medium text-primary-700">{asset.assetCode}</td>
-                    <td className="px-6 py-4">
-                      <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs border border-slate-200">
-                        {asset.fiscalYear}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-medium text-slate-800">{asset.name}</td>
-                    <td className="px-6 py-4">{asset.brand}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-slate-700">{asset.currentUser}</span>
-                        <span className="text-xs text-slate-400">{asset.department}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">{AssetTypeLabels[asset.type]}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold
+                filteredAssets.map((asset) => {
+                  const isReplaced = replacedAssetIds.has(asset.id);
+                  return (
+                    <tr key={asset.id} className={`hover:bg-slate-50 transition-colors ${isReplaced ? 'bg-slate-50/50' : ''}`}>
+                      <td className="px-6 py-4 font-mono font-medium text-primary-700">
+                        {asset.assetCode}
+                        {isReplaced && <Lock size={12} className="inline ml-2 text-slate-400" />}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs border border-slate-200">
+                          {asset.fiscalYear}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-slate-800">{asset.name}</td>
+                      <td className="px-6 py-4">{asset.brand}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-slate-700">{asset.currentUser}</span>
+                          <span className="text-xs text-slate-400">{asset.department}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">{AssetTypeLabels[asset.type]}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold
                         ${asset.status === AssetStatus.NORMAL ? 'bg-emerald-100 text-emerald-700' : ''}
                         ${asset.status === AssetStatus.BROKEN ? 'bg-red-100 text-red-700' : ''}
                         ${asset.status === AssetStatus.REPAIRING ? 'bg-amber-100 text-amber-700' : ''}
                         ${asset.status === AssetStatus.WITHDRAWN ? 'bg-slate-100 text-slate-700' : ''}
                         ${asset.status === AssetStatus.SOLD ? 'bg-gray-100 text-gray-700' : ''}
                        `}>
-                        {AssetStatusLabels[asset.status]}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex justify-center gap-2">
-                        <button onClick={() => handleShowQR(asset)} className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg tooltip" title="QR Code">
-                          <QrCode size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleShowDetail(asset)}
-                          className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
-                          title="ดูรายละเอียด"
-                        >
-                          <Eye size={18} />
-                        </button>
-                        <Link
-                          to={`/assets/${asset.id}`}
-                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                          title="แก้ไข/รายละเอียด"
-                        >
-                          <Edit3 size={18} />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(asset.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                          title="ลบ"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {AssetStatusLabels[asset.status]}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex justify-center gap-2">
+                          <button onClick={() => handleShowQR(asset)} className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg tooltip" title="QR Code">
+                            <QrCode size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleShowDetail(asset)}
+                            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                            title="ดูรายละเอียด"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          {isReplaced ? (
+                            <button
+                              className="p-2 text-slate-300 cursor-not-allowed rounded-lg"
+                              title="ไม่สามารถแก้ไขได้ (ถูกทดแทนแล้ว)"
+                              disabled
+                            >
+                              <Lock size={18} />
+                            </button>
+                          ) : (
+                            <>
+                              <Link
+                                to={`/assets/${asset.id}`}
+                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                                title="แก้ไข/รายละเอียด"
+                              >
+                                <Edit3 size={18} />
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(asset.id)}
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                title="ลบ"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={8} className="text-center py-10 text-slate-400">
@@ -510,12 +532,22 @@ const AssetList: React.FC = () => {
               >
                 ปิดหน้าต่าง
               </button>
-              <Link
-                to={`/assets/${selectedAsset.id}`}
-                className="px-4 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2"
-              >
-                <Edit3 size={16} /> แก้ไขข้อมูลเต็ม
-              </Link>
+              {replacedAssetIds.has(selectedAsset.id) ? (
+                <button
+                  disabled
+                  className="px-4 py-2 bg-slate-100 text-slate-400 rounded-lg font-medium cursor-not-allowed flex items-center gap-2"
+                  title="ไม่สามารถแก้ไขได้ เนื่องจากถูกทดแทนแล้ว"
+                >
+                  <Lock size={16} /> ถูกจำหน่าย/ทดแทนแล้ว
+                </button>
+              ) : (
+                <Link
+                  to={`/assets/${selectedAsset.id}`}
+                  className="px-4 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2"
+                >
+                  <Edit3 size={16} /> แก้ไขข้อมูลเต็ม
+                </Link>
+              )}
             </div>
           </div>
         </div>
