@@ -25,8 +25,8 @@ import {
 } from 'lucide-react';
 import { StatCardProps, AssetStatus } from '../types';
 import { useAssets } from '../context/AssetContext';
+import Select from './ui/Select';
 
-// ... (StatCard Component remains the same) ...
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon, colorClass, trend }) => (
   <div className="bg-white rounded-xl shadow-sm p-6 flex items-start justify-between border border-slate-100 hover:shadow-md transition-shadow">
     <div>
@@ -41,8 +41,12 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, colorClass, tre
 );
 
 const Dashboard: React.FC = () => {
-  const { assets, isLoading } = useAssets(); // Use real assets
-  const [selectedYear, setSelectedYear] = useState('2567');
+  const { assets, isLoading } = useAssets();
+  const [selectedYear, setSelectedYear] = useState('2568');
+
+  // Dynamic Fiscal Years
+  const currentYearBE = new Date().getFullYear() + 543;
+  const fiscalYears = Array.from({ length: 6 }, (_, i) => currentYearBE + 1 - i);
 
   // Calculate Real Stats based on Assets Context
   const filteredAssets = assets.filter(a => a.fiscalYear === selectedYear);
@@ -65,7 +69,6 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    // Fetch immediately and when year changes
     fetchStats();
   }, [selectedYear]);
 
@@ -91,20 +94,13 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative">
-            <select
+          <div className="w-48">
+            <Select
               value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full sm:w-auto appearance-none bg-white border border-slate-200 text-slate-700 py-2 pl-4 pr-10 rounded-lg font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="2568">ปีงบประมาณ 2568</option>
-              <option value="2567">ปีงบประมาณ 2567</option>
-              <option value="2566">ปีงบประมาณ 2566</option>
-              <option value="2565">ปีงบประมาณ 2565</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
-              <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
-            </div>
+              onChange={setSelectedYear}
+              options={fiscalYears.map(y => y.toString())}
+              placeholder="เลือกปีงบประมาณ"
+            />
           </div>
           <button className="flex justify-center items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 shadow-sm transition-colors">
             <Download size={16} />

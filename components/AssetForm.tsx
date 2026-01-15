@@ -7,6 +7,7 @@ import { useAssets } from '../context/AssetContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
 import Combobox from './ui/Combobox';
+import Select from './ui/Select';
 
 
 // Extended type for UI state handling
@@ -482,19 +483,16 @@ const AssetForm: React.FC = () => {
                     <label className="block text-sm font-bold text-slate-700 mb-1">
                       ปีงบประมาณที่สำรวจ (Fiscal Year) <span className="text-red-500">*</span>
                     </label>
-                    <select
-                      className="w-full border border-blue-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none bg-white font-medium text-slate-800 shadow-sm"
-                      value={formData.fiscalYear}
-                      onChange={(e) => setFormData({ ...formData, fiscalYear: e.target.value })}
+                    <Select
+                      value={formData.fiscalYear!}
+                      onChange={(val) => setFormData({ ...formData, fiscalYear: val })}
+                      options={fiscalYears.map(year => ({
+                        label: `${year} ${year === currentYearBE ? '(ปีปัจจุบัน)' : ''}`,
+                        value: year.toString()
+                      }))}
+                      placeholder="-- เลือกปีงบประมาณ --"
                       required
-                    >
-                      <option value="" disabled>-- เลือกปีงบประมาณ --</option>
-                      {fiscalYears.map(year => (
-                        <option key={year} value={year.toString()}>
-                          {year} {year === currentYearBE ? '(ปีปัจจุบัน)' : ''}
-                        </option>
-                      ))}
-                    </select>
+                    />
                     <p className="text-xs text-slate-500 mt-1">ข้อมูลสำคัญ: ใช้สำหรับจัดหมวดหมู่รายงานและติดตามวงรอบครุภัณฑ์</p>
                   </div>
                 </div>
@@ -588,19 +586,16 @@ const AssetForm: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-down">
                       <div className="md:col-span-2 bg-white border border-orange-100 p-4 rounded-lg">
                         <label className="block text-sm font-medium text-slate-700 mb-1">เลือกครุภัณฑ์เดิมที่ถูกทดแทน (เพื่อจำหน่ายออก)</label>
-                        <select
-                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50 font-medium"
+                        <Select
                           value={selectedOldAssetId}
-                          onChange={(e) => setSelectedOldAssetId(e.target.value)}
-                          disabled={isEditMode && !!formData.replacedAssetId} // Lock if already saved
-                        >
-                          <option value="">-- ค้นหาจากรหัสครุภัณฑ์ หรือ ชื่อ --</option>
-                          {availableOldAssets.map(asset => (
-                            <option key={asset.id} value={asset.id}>
-                              {asset.assetCode} - {asset.name} ({asset.status})
-                            </option>
-                          ))}
-                        </select>
+                          onChange={setSelectedOldAssetId}
+                          options={availableOldAssets.map(asset => ({
+                            label: `${asset.assetCode} - ${asset.name} (${asset.status})`,
+                            value: asset.id
+                          }))}
+                          placeholder="-- ค้นหาจากรหัสครุภัณฑ์ หรือ ชื่อ --"
+                          disabled={isEditMode && !!formData.replacedAssetId}
+                        />
 
                         {/* Preview Old Asset */}
                         {selectedOldAssetInfo && (
@@ -680,13 +675,15 @@ const AssetForm: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">สถานะปัจจุบัน</label>
-                  <select
-                    className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none bg-white"
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as AssetStatus })}
-                  >
-                    {Object.values(AssetStatus).map(s => <option key={s} value={s}>{AssetStatusLabels[s]}</option>)}
-                  </select>
+                  <Select
+                    value={formData.status!}
+                    onChange={(val) => setFormData({ ...formData, status: val as AssetStatus })}
+                    options={Object.values(AssetStatus).map(s => ({
+                      label: AssetStatusLabels[s],
+                      value: s
+                    }))}
+                    placeholder="เลือกสถานะ"
+                  />
                 </div>
 
                 <div>
@@ -902,16 +899,12 @@ const AssetForm: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">หน่วยงานที่รับผิดชอบ</label>
-                  <select
-                    className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none bg-white"
-                    value={formData.department}
-                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  >
-                    <option value="" disabled>-- เลือกหน่วยงาน --</option>
-                    {(settings.departments || []).map((dept, i) => (
-                      <option key={i} value={dept}>{dept}</option>
-                    ))}
-                  </select>
+                  <Select
+                    value={formData.department!}
+                    onChange={(val) => setFormData({ ...formData, department: val })}
+                    options={(settings.departments || []).map(dept => ({ label: dept, value: dept }))}
+                    placeholder="-- เลือกหน่วยงาน --"
+                  />
                 </div>
 
                 <div>
@@ -989,9 +982,15 @@ const AssetForm: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-amber-900 mb-1">สถานะหลังซ่อม</label>
-                      <select className="w-full border border-amber-200 rounded-lg p-2.5 bg-white" value={newMaintenance.resultingStatus} onChange={(e) => setNewMaintenance({ ...newMaintenance, resultingStatus: e.target.value as AssetStatus })}>
-                        {Object.values(AssetStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
+                      <Select
+                        value={newMaintenance.resultingStatus!}
+                        onChange={(val) => setNewMaintenance({ ...newMaintenance, resultingStatus: val as AssetStatus })}
+                        options={Object.values(AssetStatus).map(s => ({
+                          label: s,
+                          value: s
+                        }))}
+                        placeholder="เลือกสถานะ"
+                      />
                     </div>
                   </div>
                   <button onClick={handleAddMaintenance} className="mt-4 px-6 py-2 bg-amber-600 text-white rounded-lg">บันทึกรายการ</button>

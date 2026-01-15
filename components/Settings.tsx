@@ -4,6 +4,7 @@ import { useAssets } from '../context/AssetContext';
 import { SystemSettings } from '../types';
 import { api } from '../services/api';
 import SuccessModal from './SuccessModal';
+import Select from './ui/Select';
 
 interface SettingsProps {
   initialTab?: 'general' | 'specs' | 'departments' | 'notifications' | 'users';
@@ -591,27 +592,27 @@ const Settings: React.FC<SettingsProps> = ({ initialTab }) => {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">สิทธิ์การใช้งาน (Role)</label>
-                      <select
-                        className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+                      <Select
                         value={newUser.role}
-                        onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                      >
-                        <option value="Admin">Admin (ผู้ดูแลระบบ)</option>
-                        <option value="Staff">Staff (เจ้าหน้าที่)</option>
-                        <option value="Editor">Editor (ผู้แก้ไข)</option>
-                        <option value="Viewer">Viewer (ผู้ดูอย่างเดียว)</option>
-                      </select>
+                        onChange={(val) => setNewUser({ ...newUser, role: val })}
+                        options={[
+                          { label: 'Admin (ผู้ดูแลระบบ)', value: 'Admin' },
+                          { label: 'Staff (เจ้าหน้าที่)', value: 'Staff' },
+                          { label: 'Editor (ผู้แก้ไข)', value: 'Editor' },
+                          { label: 'Viewer (ผู้ดูอย่างเดียว)', value: 'Viewer' },
+                        ]}
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">สถานะ (Status)</label>
-                      <select
-                        className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+                      <Select
                         value={newUser.status || 'Active'}
-                        onChange={(e) => setNewUser({ ...newUser, status: e.target.value })}
-                      >
-                        <option value="Active">Active (ปกติ)</option>
-                        <option value="Inactive">Inactive (ระงับใช้งาน)</option>
-                      </select>
+                        onChange={(val) => setNewUser({ ...newUser, status: val })}
+                        options={[
+                          { label: 'Active (ปกติ)', value: 'Active' },
+                          { label: 'Inactive (ระงับใช้งาน)', value: 'Inactive' },
+                        ]}
+                      />
                     </div>
                   </div>
                   <div className="flex justify-end gap-2">

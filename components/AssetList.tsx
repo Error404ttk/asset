@@ -20,9 +20,10 @@ import {
 import { AssetStatus, AssetType, AssetStatusLabels, AssetTypeLabels } from '../types';
 import { Link } from 'react-router-dom';
 import { useAssets } from '../context/AssetContext';
+import Select from './ui/Select';
 
 const AssetList: React.FC = () => {
-  const { assets, deleteAsset } = useAssets(); // Use Context
+  const { assets, deleteAsset, settings } = useAssets(); // Use Context
   const [showQRModal, setShowQRModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
@@ -98,39 +99,51 @@ const AssetList: React.FC = () => {
         <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 items-center no-scrollbar touch-pan-x">
 
           {/* Year Filter */}
-          <div className="relative shrink-0">
-            <select
-              className="appearance-none pl-9 pr-8 py-2 border border-slate-200 rounded-lg text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium"
+          <div className="w-40 shrink-0">
+            <Select
               value={filterYear}
-              onChange={(e) => setFilterYear(e.target.value)}
-            >
-              {[0, 1, 2, 3].map(offset => {
-                const year = parseInt(currentThaiYear) - offset;
-                return <option key={year} value={year}>ปี {year}</option>;
-              })}
-              <option value="">ทุกปี</option>
-            </select>
-            <Calendar className="absolute left-3 top-2.5 text-slate-400" size={16} />
+              onChange={setFilterYear}
+              options={[
+                ...[0, 1, 2, 3].map(offset => {
+                  const year = (parseInt(currentThaiYear) - offset).toString();
+                  return { label: `ปี ${year}`, value: year };
+                }),
+                { label: 'ทุกปี', value: '' }
+              ]}
+              placeholder="เลือกปี"
+              icon={<Calendar size={16} />}
+            />
           </div>
 
           <div className="h-6 w-px bg-slate-200 mx-1 hidden lg:block"></div>
 
-          <select
-            className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 shrink-0"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="">ทุกสถานะ</option>
-            {Object.values(AssetStatus).map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select
-            className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 shrink-0"
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            <option value="">ทุกประเภท</option>
-            {Object.values(AssetType).map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <div className="w-48 shrink-0">
+            <Select
+              value={filterStatus}
+              onChange={setFilterStatus}
+              options={[
+                { label: 'ทุกสถานะ', value: '' },
+                ...Object.values(AssetStatus).map(s => ({ label: AssetStatusLabels[s] || s, value: s }))
+              ]}
+              placeholder="สถานะ"
+            />
+          </div>
+
+          <div className="w-48 shrink-0">
+            <Select
+              value={filterType}
+              onChange={setFilterType}
+              options={[
+                { label: 'ทุกประเภท', value: '' },
+                // Use settings options if available to include custom types, otherwise fallback to Enums
+                ...(settings.commonAssetTypes && settings.commonAssetTypes.length > 0
+                  ? settings.commonAssetTypes.map(t => ({ label: t, value: t }))
+                  : Object.entries(AssetTypeLabels).map(([key, label]) => ({ label, value: key })) // Use Keys for value if using Enum logic
+                )
+              ]}
+              placeholder="ประเภท"
+            />
+          </div>
           <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 whitespace-nowrap shrink-0">
             <Filter size={18} /> ตัวกรอง
           </button>
