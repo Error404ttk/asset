@@ -1,20 +1,41 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# ระบบสำรวจครุภัณฑ์คอมพิวเตอร์ (Computer Asset Survey System)
 
-# Run and deploy your AI Studio app
+โปรเจคสำหรับบริหารจัดการและสำรวจครุภัณฑ์คอมพิวเตอร์ประจำปี
 
-This contains everything you need to run your app locally.
+## Features
+- จัดการข้อมูลครุภัณฑ์ (เพิ่ม/ลบ/แก้ไข)
+- ระบบบันทึกการซ่อมบำรุง
+- ระบบจัดการผู้ใช้งาน (User Management)
+- Audit Log ติดตามการใช้งาน
+- รายงานและการส่งออกข้อมูล
+- **Save Animation:** แจ้งเตือนสถานะการบันทึกที่สวยงาม
 
-View your app in AI Studio: https://ai.studio/apps/drive/1vcrfUXw1wklW1y9QKM9_Is8Llqudh1aJ
+## Getting Started
 
-## Run Locally
+### Prerequisites
+- Node.js
+- MySQL Database
 
-**Prerequisites:**  Node.js
-
+### Installation
 
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```bash
+   npm install
+   cd server && npm install
+   ```
+
+2. Configure Database:
+   - Create a MySQL database
+   - Import `database.sql` (if available) or let the system auto-migrate.
+
+3. Environment Variables:
+   - Create `.env` in `server/` folder with DB credentials.
+
+4. Run:
+   ```bash
+   # Development
+   npm run dev
+
+   # Production (using PM2)
+   pm2 start ecosystem.config.cjs
+   ```
