@@ -8,7 +8,12 @@ import {
   History,
   Calendar,
   X,
-  Trash2
+  Trash2,
+  Eye,
+  MapPin,
+  Cpu,
+  Monitor,
+  HardDrive
 } from 'lucide-react';
 import { AssetStatus, AssetType, AssetStatusLabels, AssetTypeLabels } from '../types';
 import { Link } from 'react-router-dom';
@@ -17,6 +22,7 @@ import { useAssets } from '../context/AssetContext';
 const AssetList: React.FC = () => {
   const { assets, deleteAsset } = useAssets(); // Use Context
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
 
   // Filters
@@ -30,6 +36,11 @@ const AssetList: React.FC = () => {
   const handleShowQR = (asset: any) => {
     setSelectedAsset(asset);
     setShowQRModal(true);
+  };
+
+  const handleShowDetail = (asset: any) => {
+    setSelectedAsset(asset);
+    setShowDetailModal(true);
   };
 
   const handleDelete = (id: string) => {
@@ -172,6 +183,13 @@ const AssetList: React.FC = () => {
                         <button onClick={() => handleShowQR(asset)} className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg tooltip" title="QR Code">
                           <QrCode size={18} />
                         </button>
+                        <button
+                          onClick={() => handleShowDetail(asset)}
+                          className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                          title="ดูรายละเอียด"
+                        >
+                          <Eye size={18} />
+                        </button>
                         <Link
                           to={`/assets/${asset.id}`}
                           className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
@@ -257,6 +275,176 @@ const AssetList: React.FC = () => {
               >
                 พิมพ์สติ๊กเกอร์
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Asset Detail Modal */}
+      {showDetailModal && selectedAsset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
+            <div className="bg-slate-900 p-6 text-white relative shrink-0">
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800/50 p-1 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center shrink-0 backdrop-blur overflow-hidden border border-white/20">
+                  {selectedAsset.imageUrl ? (
+                    <img
+                      src={selectedAsset.imageUrl.startsWith('http') ? selectedAsset.imageUrl : `http://${window.location.hostname}:3008${selectedAsset.imageUrl}`}
+                      alt="Asset"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Monitor size={32} />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">{selectedAsset.name}</h3>
+                  <div className="flex items-center gap-2 text-slate-400 text-sm mt-1 font-mono">
+                    <span className="bg-slate-800 px-2 py-0.5 rounded text-xs border border-slate-700">{selectedAsset.assetCode}</span>
+                    <span>|</span>
+                    <span>{selectedAsset.brand} {selectedAsset.model}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Status Section */}
+                <div className="md:col-span-2 flex flex-wrap gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex-1 min-w-[150px]">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">ปีงบประมาณ</span>
+                    <p className="font-semibold text-slate-700">{selectedAsset.fiscalYear}</p>
+                  </div>
+                  <div className="flex-1 min-w-[150px]">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">สถานะ</span>
+                    <div>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold mt-1
+                          ${selectedAsset.status === AssetStatus.NORMAL ? 'bg-emerald-100 text-emerald-700' : ''}
+                          ${selectedAsset.status === AssetStatus.BROKEN ? 'bg-red-100 text-red-700' : ''}
+                          ${selectedAsset.status === AssetStatus.REPAIRING ? 'bg-amber-100 text-amber-700' : ''}
+                        `}>{AssetStatusLabels[selectedAsset.status]}</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-[150px]">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">ประเภท</span>
+                    <p className="font-semibold text-slate-700">{AssetTypeLabels[selectedAsset.type]}</p>
+                  </div>
+                </div>
+
+                {/* Location Info */}
+                <div>
+                  <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b pb-2">
+                    <MapPin size={18} className="text-primary-500" /> ข้อมูลการใช้งาน
+                  </h4>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">ผู้รับผิดชอบ:</span>
+                      <span className="font-medium text-slate-800">{selectedAsset.currentUser || '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">หน่วยงาน:</span>
+                      <span className="font-medium text-slate-800">{selectedAsset.department || '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">สถานที่ตั้ง:</span>
+                      <span className="font-medium text-slate-800">{selectedAsset.location || '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">วันที่ได้รับ:</span>
+                      <span className="font-medium text-slate-800">{selectedAsset.acquiredDate ? new Date(selectedAsset.acquiredDate).toLocaleDateString('th-TH') : '-'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Specs Info */}
+                <div>
+                  <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b pb-2">
+                    <Cpu size={18} className="text-primary-500" /> สเปค/ข้อมูลเทคนิค
+                  </h4>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">CPU:</span>
+                      <span className="font-medium text-slate-800">{selectedAsset.cpu || '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">RAM:</span>
+                      <span className="font-medium text-slate-800">{selectedAsset.ram || '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Storage:</span>
+                      <span className="font-medium text-slate-800">{selectedAsset.storage || '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">OS:</span>
+                      <span className="font-medium text-slate-800">{selectedAsset.os || '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">S/N:</span>
+                      <span className="font-medium text-slate-800 font-mono">{selectedAsset.serialNumber || '-'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Maintenance History Preview */}
+                <div className="md:col-span-2">
+                  <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b pb-2">
+                    <History size={18} className="text-primary-500" /> ประวัติการซ่อมบำรุงล่าสุด
+                  </h4>
+                  {selectedAsset.maintenanceHistory && selectedAsset.maintenanceHistory.length > 0 ? (
+                    <div className="bg-slate-50 rounded-lg border border-slate-100 overflow-hidden text-sm">
+                      <table className="w-full text-left">
+                        <thead className="bg-slate-100 text-slate-500 font-medium">
+                          <tr>
+                            <th className="px-3 py-2">วันที่</th>
+                            <th className="px-3 py-2">อาการ/รายละเอียด</th>
+                            <th className="px-3 py-2 text-right">ค่าใช้จ่าย</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {selectedAsset.maintenanceHistory.slice(0, 3).map((log: any, idx: number) => (
+                            <tr key={idx}>
+                              <td className="px-3 py-2 whitespace-nowrap text-slate-600">{new Date(log.date).toLocaleDateString('th-TH')}</td>
+                              <td className="px-3 py-2 text-slate-800">{log.description}</td>
+                              <td className="px-3 py-2 text-right font-mono text-slate-600">{log.cost.toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {selectedAsset.maintenanceHistory.length > 3 && (
+                        <div className="px-3 py-2 text-center text-xs text-slate-400 border-t border-slate-200">
+                          มีอีก {selectedAsset.maintenanceHistory.length - 3} รายการ...
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 text-sm text-center py-4 bg-slate-50 rounded-lg dashed-border">ยังไม่มีประวัติการซ่อมบำรุง</p>
+                  )}
+                </div>
+
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 shrink-0">
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="px-4 py-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors"
+              >
+                ปิดหน้าต่าง
+              </button>
+              <Link
+                to={`/assets/${selectedAsset.id}`}
+                className="px-4 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2"
+              >
+                <Edit3 size={16} /> แก้ไขข้อมูลเต็ม
+              </Link>
             </div>
           </div>
         </div>
