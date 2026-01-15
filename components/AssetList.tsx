@@ -13,7 +13,8 @@ import {
   MapPin,
   Cpu,
   Monitor,
-  HardDrive
+  HardDrive,
+  RefreshCcw
 } from 'lucide-react';
 import { AssetStatus, AssetType, AssetStatusLabels, AssetTypeLabels } from '../types';
 import { Link } from 'react-router-dom';
@@ -338,6 +339,61 @@ const AssetList: React.FC = () => {
                     <p className="font-semibold text-slate-700">{AssetTypeLabels[selectedAsset.type]}</p>
                   </div>
                 </div>
+
+                {/* Replacement Info (If applicable) */}
+                {(selectedAsset.replacedAssetId || assets.some((a: any) => a.replacedAssetId === selectedAsset.id)) && (
+                  <div className="md:col-span-2 bg-orange-50 border border-orange-100 rounded-xl p-4">
+                    <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
+                      <History size={18} /> ประวัติการทดแทน (Replacement History)
+                    </h4>
+
+                    {/* Case 1: This asset replaces an old one */}
+                    {selectedAsset.replacedAssetId && (
+                      <div className="flex items-start gap-3 text-sm">
+                        <div className="bg-orange-100 p-2 rounded text-orange-600 mt-1">
+                          <RefreshCcw size={16} />
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-700">ครุภัณฑ์นี้จัดซื้อทดแทนเครื่องเดิม:</p>
+                          {(() => {
+                            const oldAsset = assets.find((a: any) => a.id === selectedAsset.replacedAssetId);
+                            return oldAsset ? (
+                              <div className="bg-white border border-orange-200 rounded p-2 mt-1">
+                                <p className="font-mono text-orange-700 font-bold">{oldAsset.assetCode}</p>
+                                <p className="text-slate-600">{oldAsset.name}</p>
+                                <p className="text-xs text-slate-400 mt-0.5">สถานะปัจจุบัน: {oldAsset.status}</p>
+                              </div>
+                            ) : (
+                              <p className="text-slate-500 italic">ไม่พบข้อมูลเครื่องเดิม (ID: {selectedAsset.replacedAssetId})</p>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Case 2: This asset was replaced by a new one */}
+                    {(() => {
+                      const newReplacement = assets.find((a: any) => a.replacedAssetId === selectedAsset.id);
+                      return newReplacement ? (
+                        <div className="flex items-start gap-3 text-sm mt-3 pt-3 border-t border-orange-200">
+                          <div className="bg-red-100 p-2 rounded text-red-600 mt-1">
+                            <Trash2 size={16} />
+                          </div>
+                          <div>
+                            <p className="font-bold text-red-700">ครุภัณฑ์นี้ถูกจำหน่าย/ทดแทนแล้ว โดย:</p>
+                            <div className="bg-white border border-red-200 rounded p-2 mt-1">
+                              <p className="font-mono text-emerald-700 font-bold">{newReplacement.assetCode}</p>
+                              <p className="text-slate-600">{newReplacement.name}</p>
+                              <Link to={`/assets/${newReplacement.id}`} className="text-xs text-blue-500 underline mt-1 inline-block" onClick={() => setShowDetailModal(false)}>
+                                ดูเครื่องใหม่
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
+                )}
 
                 {/* Location Info */}
                 <div>
