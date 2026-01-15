@@ -324,7 +324,14 @@ const AssetForm: React.FC = () => {
 
   // Helper to check if type matches "Computer" logic (Enum or Thai Label)
   const isComputerType = (type: string | undefined) => {
-    return type === AssetType.COMPUTER || type === AssetTypeLabels[AssetType.COMPUTER]; // "COMPUTER" or "คอมพิวเตอร์"
+    if (!type) return false;
+    const t = type.toString().toLowerCase();
+    // Check against Enum/Labels
+    if (t === AssetType.COMPUTER.toLowerCase() || t === AssetTypeLabels[AssetType.COMPUTER].toLowerCase()) return true;
+
+    // Check against common keywords for dynamic types (Thai/English)
+    const computerKeywords = ['computer', 'pc', 'notebook', 'laptop', 'server', 'workstation', 'all-in-one', 'คอม', 'โน้ตบุ๊ก', 'แล็ปท็อป', 'เซิร์ฟเวอร์'];
+    return computerKeywords.some(keyword => t.includes(keyword));
   };
 
   // Helper to get icon for specs tab
