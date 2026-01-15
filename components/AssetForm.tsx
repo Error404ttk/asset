@@ -296,8 +296,8 @@ const AssetForm: React.FC = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('ขนาดไฟล์ต้องไม่เกิน 5MB', 'warning');
+      if (file.size > 25 * 1024 * 1024) {
+        showToast('ขนาดไฟล์ต้องไม่เกิน 25MB', 'warning');
         return;
       }
 
@@ -693,7 +693,7 @@ const AssetForm: React.FC = () => {
                   <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition cursor-pointer relative overflow-hidden group">
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                       onChange={handleImageUpload}
                       className="absolute inset-0 opacity-0 cursor-pointer z-10"
                     />
