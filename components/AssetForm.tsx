@@ -6,6 +6,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAssets } from '../context/AssetContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
+import Combobox from './ui/Combobox';
+
 
 // Extended type for UI state handling
 type ExtendedMaintenanceRecord = MaintenanceRecord & {
@@ -475,13 +477,12 @@ const AssetForm: React.FC = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">ชื่อรายการครุภัณฑ์ *</label>
-                  <input
-                    type="text"
-                    className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                  <Combobox
+                    label="ชื่อรายการครุภัณฑ์"
+                    value={formData.name || ''}
+                    onChange={(val) => setFormData({ ...formData, name: val })}
+                    options={settings.commonAssetNames || []}
                     placeholder="เช่น เครื่องคอมพิวเตอร์ประมวลผลระดับสูง"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                   />
                 </div>
@@ -634,26 +635,24 @@ const AssetForm: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">ยี่ห้อ (Brand)</label>
-                      <input
-                        type="text"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                      <Combobox
+                        label="ยี่ห้อ (Brand)"
+                        value={formData.brand || ''}
+                        onChange={(val) => setFormData({ ...formData, brand: val })}
+                        options={settings.commonBrands || []}
                         placeholder="เช่น Dell, HP, Lenovo"
-                        value={formData.brand}
-                        onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                       />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">รุ่น (Model)</label>
-                  <input
-                    type="text"
-                    className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                  <Combobox
+                    label="รุ่น (Model)"
+                    value={formData.model || ''}
+                    onChange={(val) => setFormData({ ...formData, model: val })}
+                    options={settings.commonModels || []}
                     placeholder="เช่น OptiPlex 7090"
-                    value={formData.model}
-                    onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                   />
                 </div>
 
