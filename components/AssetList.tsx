@@ -104,7 +104,7 @@ const AssetList: React.FC = () => {
               value={filterYear}
               onChange={setFilterYear}
               options={[
-                ...[0, 1, 2, 3].map(offset => {
+                ...[0, 1, 2, 3, 4, 5, 6].map(offset => {
                   const year = (parseInt(currentThaiYear) - offset).toString();
                   return { label: `ปี ${year}`, value: year };
                 }),
