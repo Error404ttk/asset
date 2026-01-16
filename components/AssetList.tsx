@@ -95,8 +95,8 @@ const AssetList: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {/* Scrollable Filters on Mobile */}
-        <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 items-center no-scrollbar touch-pan-x">
+        {/* Responsive Filters - Wrap on mobile instead of scroll to prevent dropdown clipping */}
+        <div className="flex flex-wrap gap-2 items-center">
 
           {/* Year Filter */}
           <div className="w-40 shrink-0">
