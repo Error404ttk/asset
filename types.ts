@@ -5,7 +5,8 @@ export enum AssetStatus {
   BROKEN = 'BROKEN',
   REPAIRING = 'REPAIRING',
   SOLD = 'SOLD',
-  WITHDRAWN = 'WITHDRAWN'
+  WITHDRAWN = 'WITHDRAWN',
+  WAIT_FOR_DISPOSAL = 'WAIT_FOR_DISPOSAL'
 }
 
 export const AssetStatusLabels: Record<AssetStatus, string> = {
@@ -13,7 +14,8 @@ export const AssetStatusLabels: Record<AssetStatus, string> = {
   [AssetStatus.BROKEN]: 'ชำรุด',
   [AssetStatus.REPAIRING]: 'ซ่อมบำรุง',
   [AssetStatus.SOLD]: 'จำหน่ายแล้ว',
-  [AssetStatus.WITHDRAWN]: 'เบิกแล้ว'
+  [AssetStatus.WITHDRAWN]: 'เบิกแล้ว',
+  [AssetStatus.WAIT_FOR_DISPOSAL]: 'รอจำหน่าย'
 };
 
 export enum AssetType {

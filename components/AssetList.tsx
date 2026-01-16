@@ -197,6 +197,7 @@ const AssetList: React.FC = () => {
                         ${asset.status === AssetStatus.REPAIRING ? 'bg-amber-100 text-amber-700' : ''}
                         ${asset.status === AssetStatus.WITHDRAWN ? 'bg-slate-100 text-slate-700' : ''}
                         ${asset.status === AssetStatus.SOLD ? 'bg-gray-100 text-gray-700' : ''}
+                        ${asset.status === AssetStatus.WAIT_FOR_DISPOSAL ? 'bg-orange-100 text-orange-700' : ''}
                        `}>
                           {AssetStatusLabels[asset.status]}
                         </span>
