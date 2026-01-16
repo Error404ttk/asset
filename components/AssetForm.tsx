@@ -655,11 +655,14 @@ const AssetForm: React.FC = () => {
                   <label className="block text-sm font-bold text-slate-800 mb-2">ประเภทและหมวดหมู่</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Combobox
+                      <Select
                         label="ประเภทครุภัณฑ์ (Asset Type)"
                         value={formData.type || ''}
                         onChange={(val) => setFormData({ ...formData, type: val as any })}
-                        options={assetTypeOptions}
+                        options={Object.values(AssetType).map((t) => ({
+                          label: AssetTypeLabels[t],
+                          value: t
+                        }))}
                         placeholder="เลือกประเภทครุภัณฑ์"
                       />
                       <p className="text-xs text-slate-400 mt-1">ใช้สำหรับกำหนดแบบฟอร์มข้อมูลทางเทคนิค</p>
