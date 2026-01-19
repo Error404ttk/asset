@@ -70,7 +70,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className={`flex h-screen bg-slate-100 overflow-hidden animate-fade-in transition-opacity duration-300 ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
+    <div
+      className={`flex h-[100dvh] bg-slate-100 overflow-hidden animate-fade-in transition-opacity duration-300 ${isExiting ? 'opacity-0' : 'opacity-100'}`}
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       {/* Sidebar - Desktop */}
       <aside
         className={`bg-slate-900 text-white transition-all duration-300 hidden md:flex flex-col ${isSidebarOpen ? 'w-64' : 'w-20'
@@ -219,7 +222,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto p-4 md:p-6 bg-slate-50 relative">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50 relative overscroll-y-none">
           {children}
         </main>
       </div>
