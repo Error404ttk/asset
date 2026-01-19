@@ -152,9 +152,9 @@ const AssetList: React.FC = () => {
 
       {/* Data Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="overflow-x-auto touch-pan-x">
+        <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600 min-w-[900px]">
-            <thead className="bg-slate-50 text-slate-700 uppercase font-bold text-xs">
+            <thead className="bg-slate-50 text-slate-700 uppercase font-bold text-xs sticky top-0 z-10 shadow-sm">
               <tr>
                 <th className="px-6 py-4">รหัสครุภัณฑ์</th>
                 <th className="px-6 py-4">ปีงบฯ</th>
