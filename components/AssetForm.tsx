@@ -129,7 +129,9 @@ const AssetForm: React.FC = () => {
   // Pre-fill asset types from settings or defaults
   // Priority: 1. Settings from DB (if user customized) 2. Thai Enum Labels 3. English Enum
   const assetTypeOptions = (settings.commonAssetTypes && settings.commonAssetTypes.length > 0)
-    ? settings.commonAssetTypes
+    ? (settings.commonAssetTypes.includes('Server') || settings.commonAssetTypes.includes('เครื่องแม่ข่าย')
+      ? settings.commonAssetTypes
+      : [...settings.commonAssetTypes, 'Server'])
     : Object.values(AssetTypeLabels);
 
   // Debugging: Log options to console to verify
@@ -452,26 +454,26 @@ const AssetForm: React.FC = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-xl overflow-hidden">
         {/* Tabs Header */}
         <div className="flex border-b border-slate-100 overflow-x-auto">
           <button
             onClick={() => setActiveTab('general')}
-            className={`flex items - center gap - 2 px - 6 py - 4 text - sm font - medium transition - colors border - b - 2 whitespace - nowrap ${activeTab === 'general' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
+            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap outline-none focus:outline-none focus:ring-0 ${activeTab === 'general' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
               } `}
           >
             <FileText size={18} /> ข้อมูลทั่วไป
           </button>
           <button
             onClick={() => setActiveTab('specs')}
-            className={`flex items - center gap - 2 px - 6 py - 4 text - sm font - medium transition - colors border - b - 2 whitespace - nowrap ${activeTab === 'specs' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
+            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap outline-none focus:outline-none focus:ring-0 ${activeTab === 'specs' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
               } `}
           >
             {getSpecsIcon()} คุณสมบัติทางเทคนิค
           </button>
           <button
             onClick={() => setActiveTab('location')}
-            className={`flex items - center gap - 2 px - 6 py - 4 text - sm font - medium transition - colors border - b - 2 whitespace - nowrap ${activeTab === 'location' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
+            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap outline-none focus:outline-none focus:ring-0 ${activeTab === 'location' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
               } `}
           >
             <MapPin size={18} /> สถานที่และผู้ใช้
@@ -479,7 +481,7 @@ const AssetForm: React.FC = () => {
           {isEditMode && (
             <button
               onClick={() => setActiveTab('maintenance')}
-              className={`flex items - center gap - 2 px - 6 py - 4 text - sm font - medium transition - colors border - b - 2 whitespace - nowrap ${activeTab === 'maintenance' ? 'border-amber-500 text-amber-600 bg-amber-50' : 'border-transparent text-slate-500 hover:text-slate-800'
+              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap outline-none focus:outline-none focus:ring-0 ${activeTab === 'maintenance' ? 'border-amber-500 text-amber-600 bg-amber-50' : 'border-transparent text-slate-500 hover:text-slate-800'
                 } `}
             >
               <Wrench size={18} /> ประวัติซ่อมบำรุง
@@ -493,27 +495,22 @@ const AssetForm: React.FC = () => {
             {activeTab === 'general' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
 
-                {/* Highlighted Fiscal Year Section */}
-                <div className="md:col-span-2 bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
-                    <Calendar size={24} />
-                  </div>
-                  <div className="flex-1 w-full">
-                    <label className="block text-sm font-bold text-slate-700 mb-1">
-                      ปีงบประมาณที่สำรวจ (Fiscal Year) <span className="text-red-500">*</span>
-                    </label>
-                    <Select
-                      value={formData.fiscalYear!}
-                      onChange={(val) => setFormData({ ...formData, fiscalYear: val })}
-                      options={fiscalYears.map(year => ({
-                        label: `${year} ${year === currentYearBE ? '(ปีปัจจุบัน)' : ''} `,
-                        value: year.toString()
-                      }))}
-                      placeholder="-- เลือกปีงบประมาณ --"
-                      required
-                    />
-                    <p className="text-xs text-slate-500 mt-1">ข้อมูลสำคัญ: ใช้สำหรับจัดหมวดหมู่รายงานและติดตามวงรอบครุภัณฑ์</p>
-                  </div>
+                {/* Fiscal Year Section - Flattened */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-slate-700 mb-1">
+                    ปีงบประมาณที่สำรวจ (Fiscal Year) <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    value={formData.fiscalYear!}
+                    onChange={(val) => setFormData({ ...formData, fiscalYear: val })}
+                    options={fiscalYears.map(year => ({
+                      label: `${year} ${year === currentYearBE ? '(ปีปัจจุบัน)' : ''} `,
+                      value: year.toString()
+                    }))}
+                    placeholder="-- เลือกปีงบประมาณ --"
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-1">ข้อมูลสำคัญ: ใช้สำหรับจัดหมวดหมู่รายงานและติดตามวงรอบครุภัณฑ์</p>
                 </div>
 
                 <div className="md:col-span-2">
@@ -656,7 +653,7 @@ const AssetForm: React.FC = () => {
                   )}
                 </div>
 
-                <div className="md:col-span-2 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-slate-800 mb-2">ประเภทและหมวดหมู่</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>

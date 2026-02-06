@@ -24,6 +24,7 @@ export enum AssetType {
   PRINTER = 'PRINTER',
   UPS = 'UPS',
   NETWORK = 'NETWORK',
+  SERVER = 'SERVER',
   OTHER = 'OTHER'
 }
 
@@ -33,6 +34,7 @@ export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.PRINTER]: 'เครื่องพิมพ์',
   [AssetType.UPS]: 'UPS',
   [AssetType.NETWORK]: 'อุปกรณ์เครือข่าย',
+  [AssetType.SERVER]: 'Server',
   [AssetType.OTHER]: 'อื่นๆ'
 };
 

@@ -38,6 +38,7 @@ const Analysis: React.FC = () => {
         if (lower.includes('เครื่องพิมพ์') || lower.includes('printer')) return 'bg-orange-50 text-orange-700 border-orange-200';
         if (lower.includes('สำรองไฟ') || lower.includes('ups')) return 'bg-amber-50 text-amber-700 border-amber-200';
         if (lower.includes('เครือข่าย') || lower.includes('network')) return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+        if (lower.includes('server') || lower.includes('เครื่องแม่ข่าย')) return 'bg-violet-50 text-violet-700 border-violet-200';
         return 'bg-slate-100 text-slate-700 border-slate-200';
     };
 
@@ -70,8 +71,18 @@ const Analysis: React.FC = () => {
     const assetsByType = Object.values(AssetType).map(type => ({
         type,
         label: AssetTypeLabels[type], // Use label for display
-        count: assets.filter(a => a.type === type).length,
-        broken: assets.filter(a => a.type === type && a.status === AssetStatus.BROKEN).length
+        count: assets.filter(a => {
+            // Robust check: match Enum Value, Label, or Case-insensitive
+            const t = a.type || '';
+            const label = AssetTypeLabels[type] || '';
+            return t === type || t === label || t.toLowerCase() === type.toLowerCase() || t.toLowerCase() === label.toLowerCase();
+        }).length,
+        broken: assets.filter(a => {
+            const t = a.type || '';
+            const label = AssetTypeLabels[type] || '';
+            const isType = t === type || t === label || t.toLowerCase() === type.toLowerCase() || t.toLowerCase() === label.toLowerCase();
+            return isType && a.status === AssetStatus.BROKEN;
+        }).length
     }));
 
     // Group by department
@@ -220,7 +231,7 @@ const Analysis: React.FC = () => {
                                 จำนวนตามประเภท
                             </h3>
                             <div className="space-y-3">
-                                {assetsByType.filter(t => t.count > 0).map((item, idx) => (
+                                {assetsByType.map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-3">
                                         <div className="w-24 text-sm text-slate-600 truncate">{item.label || item.type}</div>
                                         <div className="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden print:border print:border-slate-200">

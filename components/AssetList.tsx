@@ -143,7 +143,9 @@ const AssetList: React.FC = () => {
                 { label: 'ทุกประเภท', value: '' },
                 // Use settings options if available to include custom types, otherwise fallback to Enums
                 ...(settings.commonAssetTypes && settings.commonAssetTypes.length > 0
-                  ? settings.commonAssetTypes.map(t => ({ label: t, value: t }))
+                  ? (settings.commonAssetTypes.includes('Server') || settings.commonAssetTypes.includes('เครื่องแม่ข่าย')
+                    ? settings.commonAssetTypes
+                    : [...settings.commonAssetTypes, 'Server']).map(t => ({ label: t, value: t }))
                   : Object.entries(AssetTypeLabels).map(([key, label]) => ({ label, value: key })) // Use Keys for value if using Enum logic
                 )
               ]}
@@ -205,6 +207,7 @@ const AssetList: React.FC = () => {
                             if (lower.includes('เครื่องพิมพ์') || lower.includes('printer')) return 'bg-orange-50 text-orange-700 border-orange-200';
                             if (lower.includes('สำรองไฟ') || lower.includes('ups')) return 'bg-amber-50 text-amber-700 border-amber-200';
                             if (lower.includes('เครือข่าย') || lower.includes('network')) return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+                            if (lower.includes('server') || lower.includes('เครื่องแม่ข่าย')) return 'bg-violet-50 text-violet-700 border-violet-200';
                             return 'bg-slate-100 text-slate-700 border-slate-200';
                           };
                           return (
