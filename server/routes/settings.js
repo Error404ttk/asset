@@ -23,16 +23,16 @@ router.get('/', async (req, res) => {
         const finalSettings = {
             agencyName: 'ระบุหน่วยงาน',
             address: '',
-            departments: [],
-            commonOS: [],
-            commonRam: [],
-            commonStorage: [],
-            commonCpu: [],
-            commonLicenseTypes: [],
+            departments: ['สำนักปลัด', 'กองคลัง', 'กองช่าง'],
+            commonOS: ['Windows 11', 'Windows 10'],
+            commonRam: ['8GB', '16GB'],
+            commonStorage: ['256GB SSD', '512GB SSD'],
+            commonCpu: ['Intel Core i5', 'Intel Core i7'],
+            commonLicenseTypes: ['มีลิขสิทธิ์', 'ไม่มีลิขสิทธิ์'],
             commonAssetNames: [],
             commonBrands: [],
             commonModels: [],
-            commonAssetTypes: [],
+            commonAssetTypes: ['คอมพิวเตอร์', 'จอภาพ', 'เครื่องพิมพ์', 'UPS', 'อุปกรณ์เครือข่าย', 'อื่นๆ'],
             ...settings
         };
 
