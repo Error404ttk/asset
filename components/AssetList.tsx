@@ -195,7 +195,25 @@ const AssetList: React.FC = () => {
                           <span className="text-xs text-slate-400">{asset.department}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">{AssetTypeLabels[asset.type] || asset.type}</td>
+                      <td className="px-6 py-4">
+                        {(() => {
+                          const displayType = AssetTypeLabels[asset.type] || asset.type;
+                          const getStyle = (t: string) => {
+                            const lower = t.toLowerCase();
+                            if (lower.includes('คอมพิวเตอร์') || lower.includes('computer')) return 'bg-blue-50 text-blue-700 border-blue-200';
+                            if (lower.includes('จอภาพ') || lower.includes('monitor')) return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                            if (lower.includes('เครื่องพิมพ์') || lower.includes('printer')) return 'bg-orange-50 text-orange-700 border-orange-200';
+                            if (lower.includes('สำรองไฟ') || lower.includes('ups')) return 'bg-amber-50 text-amber-700 border-amber-200';
+                            if (lower.includes('เครือข่าย') || lower.includes('network')) return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+                            return 'bg-slate-100 text-slate-700 border-slate-200';
+                          };
+                          return (
+                            <span className={`px-2 py-1 rounded text-xs font-medium border ${getStyle(displayType)}`}>
+                              {displayType}
+                            </span>
+                          );
+                        })()}
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`px - 2 py - 1 rounded - full text - xs font - semibold
                         ${asset.status === AssetStatus.NORMAL ? 'bg-emerald-100 text-emerald-700' : ''}
