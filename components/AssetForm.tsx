@@ -1,13 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { AssetType, AssetStatus, MaintenanceRecord, Asset, AssetTypeLabels, AssetStatusLabels } from '../types';
 import SuccessModal from './SuccessModal';
-import { Save, X, Upload, Laptop, MapPin, FileText, Wrench, Plus, Trash2, Calendar, User, AlertTriangle, Monitor, Printer, Server, Wifi, Hash, RotateCcw, BadgeCheck, RefreshCcw, FileMinus } from 'lucide-react';
+import { Save, X, Upload, Laptop, MapPin, FileText, Wrench, Plus, Trash2, Calendar, User, AlertTriangle, Monitor, Printer, Server, Wifi, Hash, RotateCcw, BadgeCheck, RefreshCcw, FileMinus, Maximize } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAssets } from '../context/AssetContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
 import Combobox from './ui/Combobox';
 import Select from './ui/Select';
+import ImageModal from './ui/ImageModal';
 
 
 // Extended type for UI state handling
@@ -18,7 +20,7 @@ type ExtendedMaintenanceRecord = MaintenanceRecord & {
 const AssetForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { addAsset, updateAsset, getAssetById, settings, assets } = useAssets(); // Use settings & assets from Context
+  const { addAsset, updateAsset, getAssetById, settings, assets, isLoading } = useAssets(); // Use settings & assets from Context
   const { showToast } = useToast(); // Use Toast Context
   const isEditMode = !!id;
 
@@ -71,6 +73,7 @@ const AssetForm: React.FC = () => {
   // Image Upload State
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   // Maintenance State (Extended with UI status)
   const [maintenanceRecords, setMaintenanceRecords] = useState<ExtendedMaintenanceRecord[]>([]);
@@ -88,6 +91,8 @@ const AssetForm: React.FC = () => {
 
   // Load Data if Edit Mode
   useEffect(() => {
+    if (isLoading) return; // Wait for data to load
+
     if (isEditMode && id) {
       const asset = getAssetById(id);
       if (asset) {
@@ -112,7 +117,7 @@ const AssetForm: React.FC = () => {
         navigate('/assets');
       }
     }
-  }, [isEditMode, id, getAssetById, navigate, showToast]);
+  }, [isEditMode, id, getAssetById, navigate, showToast, isLoading]);
 
   // Sync newMaintenance resultingStatus with current status when opening the form
   useEffect(() => {
@@ -203,7 +208,7 @@ const AssetForm: React.FC = () => {
             disposalId: disposalDocId.trim(),
             disposalDate: disposalDate,
             replacementAssetId: newAssetId,
-            note: (oldAsset.note ? oldAsset.note + '\n' : '') + `[ระบบ] จำหน่ายออกเพื่อทดแทนด้วยเครื่องใหม่ ID: ${trimmedAssetCode || 'N/A'}`
+            note: (oldAsset.note ? oldAsset.note + '\n' : '') + `[ระบบ] จำหน่ายออกเพื่อทดแทนด้วยเครื่องใหม่ ID: ${trimmedAssetCode || 'N/A'} `
           });
         }
       }
@@ -439,7 +444,7 @@ const AssetForm: React.FC = () => {
             {isEditMode ? 'รายละเอียด/แก้ไขครุภัณฑ์' : 'เพิ่มครุภัณฑ์ใหม่'}
           </h1>
           <p className="text-slate-500">
-            {isEditMode ? `จัดการข้อมูลครุภัณฑ์: ${formData.assetCode}` : 'กรอกข้อมูลรายละเอียดครุภัณฑ์เพื่อบันทึกลงระบบ'}
+            {isEditMode ? `จัดการข้อมูลครุภัณฑ์: ${formData.assetCode} ` : 'กรอกข้อมูลรายละเอียดครุภัณฑ์เพื่อบันทึกลงระบบ'}
           </p>
         </div>
         <button onClick={() => navigate('/assets')} className="text-slate-500 hover:text-slate-700">
@@ -452,30 +457,30 @@ const AssetForm: React.FC = () => {
         <div className="flex border-b border-slate-100 overflow-x-auto">
           <button
             onClick={() => setActiveTab('general')}
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'general' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
-              }`}
+            className={`flex items - center gap - 2 px - 6 py - 4 text - sm font - medium transition - colors border - b - 2 whitespace - nowrap ${activeTab === 'general' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
+              } `}
           >
             <FileText size={18} /> ข้อมูลทั่วไป
           </button>
           <button
             onClick={() => setActiveTab('specs')}
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'specs' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
-              }`}
+            className={`flex items - center gap - 2 px - 6 py - 4 text - sm font - medium transition - colors border - b - 2 whitespace - nowrap ${activeTab === 'specs' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
+              } `}
           >
             {getSpecsIcon()} คุณสมบัติทางเทคนิค
           </button>
           <button
             onClick={() => setActiveTab('location')}
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'location' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
-              }`}
+            className={`flex items - center gap - 2 px - 6 py - 4 text - sm font - medium transition - colors border - b - 2 whitespace - nowrap ${activeTab === 'location' ? 'border-primary-600 text-primary-600 bg-primary-50' : 'border-transparent text-slate-500 hover:text-slate-800'
+              } `}
           >
             <MapPin size={18} /> สถานที่และผู้ใช้
           </button>
           {isEditMode && (
             <button
               onClick={() => setActiveTab('maintenance')}
-              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'maintenance' ? 'border-amber-500 text-amber-600 bg-amber-50' : 'border-transparent text-slate-500 hover:text-slate-800'
-                }`}
+              className={`flex items - center gap - 2 px - 6 py - 4 text - sm font - medium transition - colors border - b - 2 whitespace - nowrap ${activeTab === 'maintenance' ? 'border-amber-500 text-amber-600 bg-amber-50' : 'border-transparent text-slate-500 hover:text-slate-800'
+                } `}
             >
               <Wrench size={18} /> ประวัติซ่อมบำรุง
             </button>
@@ -501,7 +506,7 @@ const AssetForm: React.FC = () => {
                       value={formData.fiscalYear!}
                       onChange={(val) => setFormData({ ...formData, fiscalYear: val })}
                       options={fiscalYears.map(year => ({
-                        label: `${year} ${year === currentYearBE ? '(ปีปัจจุบัน)' : ''}`,
+                        label: `${year} ${year === currentYearBE ? '(ปีปัจจุบัน)' : ''} `,
                         value: year.toString()
                       }))}
                       placeholder="-- เลือกปีงบประมาณ --"
@@ -540,10 +545,10 @@ const AssetForm: React.FC = () => {
                   <div className="relative">
                     <input
                       type="text"
-                      className={`w-full border rounded-lg p-2.5 outline-none transition-colors ${isTempAssetCode
+                      className={`w - full border rounded - lg p - 2.5 outline - none transition - colors ${isTempAssetCode
                         ? 'bg-amber-50 border-amber-300 text-amber-700 font-mono'
                         : 'bg-white border-slate-200 focus:ring-2 focus:ring-primary-500'
-                        }`}
+                        } `}
                       placeholder="xx-xx-xxxx"
                       value={formData.assetCode}
                       onChange={(e) => setFormData({ ...formData, assetCode: e.target.value })}
@@ -657,10 +662,10 @@ const AssetForm: React.FC = () => {
                     <div>
                       <Select
                         label="ประเภทครุภัณฑ์ (Asset Type)"
-                        value={formData.type || ''}
+                        value={AssetTypeLabels[formData.type as any] || formData.type || ''}
                         onChange={(val) => setFormData({ ...formData, type: val as any })}
-                        options={Object.values(AssetType).map((t) => ({
-                          label: AssetTypeLabels[t],
+                        options={assetTypeOptions.map((t) => ({
+                          label: t,
                           value: t
                         }))}
                         placeholder="เลือกประเภทครุภัณฑ์"
@@ -734,28 +739,47 @@ const AssetForm: React.FC = () => {
                     />
 
                     {previewImageUrl || formData.imageUrl ? (
-                      <div className="relative w-full h-48">
+                      <div className="relative w-full h-64 group/image">
                         <img
                           src={previewImageUrl || (formData.imageUrl ? `http://${window.location.hostname}:3008${formData.imageUrl}` : '')}
                           alt="Asset Preview"
-                          className="w-full h-full object-contain rounded-lg"
+                          className="w-full h-full object-contain rounded-lg bg-slate-100 cursor-zoom-in"
+                          onClick={() => setIsImageModalOpen(true)}
                         />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          <span className="text-white font-medium flex items-center gap-2"><Upload size={18} /> เปลี่ยนรูปภาพ</span>
+
+                        {/* Overlay Controls */}
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                          <div className="bg-black/60 text-white px-4 py-2 rounded-full flex items-center gap-2 backdrop-blur-sm">
+                            <Maximize size={16} /> คลิกเพื่อขยาย
+                          </div>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setPreviewImageUrl('');
-                            setSelectedImageFile(null);
-                            setFormData({ ...formData, imageUrl: '' });
-                          }}
-                          className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-600 text-white rounded-full z-20 transition-all opacity-0 group-hover:opacity-100"
-                          title="ลบรูปภาพ"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+
+                        {/* Top Right Controls */}
+                        <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
+                          <label className="p-2 bg-white/90 hover:bg-white text-slate-700 rounded-full cursor-pointer shadow-sm transition-colors" title="เปลี่ยนรูปภาพ">
+                            <Upload size={16} />
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              setPreviewImageUrl('');
+                              setSelectedImageFile(null);
+                              setFormData({ ...formData, imageUrl: '' });
+                            }}
+                            className="p-2 bg-red-500/90 hover:bg-red-600 text-white rounded-full shadow-sm transition-colors"
+                            title="ลบรูปภาพ"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div >
                     ) : (
                       <>
                         <Upload size={32} className="mb-2" />
@@ -768,308 +792,316 @@ const AssetForm: React.FC = () => {
             )}
 
             {/* Specs Tab */}
-            {activeTab === 'specs' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-                <div className="md:col-span-2 bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded text-blue-600">
-                    {getSpecsIcon()}
+            {
+              activeTab === 'specs' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                  <div className="md:col-span-2 bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-start gap-3">
+                    <div className="p-2 bg-blue-100 rounded text-blue-600">
+                      {getSpecsIcon()}
+                    </div>
+                    <div className="text-sm text-blue-800">
+                      <p className="font-semibold">ข้อมูลทางเทคนิคสำหรับ: {formData.type}</p>
+                      <p>กรุณากรอกรายละเอียดสเปคให้ครบถ้วนเพื่อประโยชน์ในการซ่อมบำรุงและตรวจสอบ</p>
+                    </div>
                   </div>
-                  <div className="text-sm text-blue-800">
-                    <p className="font-semibold">ข้อมูลทางเทคนิคสำหรับ: {formData.type}</p>
-                    <p>กรุณากรอกรายละเอียดสเปคให้ครบถ้วนเพื่อประโยชน์ในการซ่อมบำรุงและตรวจสอบ</p>
-                  </div>
-                </div>
 
-                {/* Conditional Fields based on Asset Type */}
-                {(formData.type === AssetType.COMPUTER || formData.type === AssetTypeLabels[AssetType.COMPUTER]) && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">CPU (Processor)</label>
-                      <input
-                        type="text"
-                        list="cpu-options"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
-                        placeholder="เช่น Intel Core i7-12700"
-                        value={formData.cpu || ''}
-                        onChange={(e) => setFormData({ ...formData, cpu: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">RAM (Memory)</label>
-                      <input
-                        type="text"
-                        list="ram-options"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
-                        placeholder="เช่น 16GB DDR4"
-                        value={formData.ram || ''}
-                        onChange={(e) => setFormData({ ...formData, ram: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Storage (HDD/SSD)</label>
-                      <input
-                        type="text"
-                        list="storage-options"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
-                        placeholder="เช่น 512GB NVMe SSD"
-                        value={formData.storage || ''}
-                        onChange={(e) => setFormData({ ...formData, storage: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Graphic Card (GPU)</label>
-                      <input
-                        type="text"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
-                        placeholder="On-board / Nvidia RTX 3050"
-                        value={formData.gpu || ''}
-                        onChange={(e) => setFormData({ ...formData, gpu: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Operating System</label>
-                      <input
-                        type="text"
-                        list="os-options"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
-                        placeholder="Windows 11 Pro"
-                        value={formData.os || ''}
-                        onChange={(e) => setFormData({ ...formData, os: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">License Type (สถานะลิขสิทธิ์)</label>
-                      <input
-                        type="text"
-                        list="license-options"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
-                        placeholder="เลือกหรือระบุสถานะลิขสิทธิ์"
-                        value={formData.licenseType || ''}
-                        onChange={(e) => setFormData({ ...formData, licenseType: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Product Key / License</label>
-                      <input
-                        type="text"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none font-mono"
-                        placeholder="xxxxx-xxxxx-xxxxx-xxxxx"
-                        value={formData.productKey || ''}
-                        onChange={(e) => setFormData({ ...formData, productKey: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">MAC Address</label>
-                      <input
-                        type="text"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none font-mono"
-                        placeholder="00:1B:44:11:3A:B7"
-                        value={formData.macAddress || ''}
-                        onChange={(e) => setFormData({ ...formData, macAddress: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">IP Address</label>
-                      <input
-                        type="text"
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none font-mono"
-                        placeholder="192.168.1.xxx"
-                        value={formData.ipAddress || ''}
-                        onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {/* Simplified Specs for other types */}
-                {formData.type !== AssetType.COMPUTER && (
-                  <div className="md:col-span-2 space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">รายละเอียดเพิ่มเติม/หมายเหตุ (Specification Note)</label>
-                      <textarea
-                        className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none h-32"
-                        placeholder={`ระบุรายละเอียดทางเทคนิคสำหรับ ${formData.type}...`}
-                        value={formData.note || ''}
-                        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                      ></textarea>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Conditional Fields based on Asset Type */}
+                  {(formData.type === AssetType.COMPUTER || formData.type === AssetTypeLabels[AssetType.COMPUTER]) && (
+                    <>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Serial Number (S/N)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">CPU (Processor)</label>
+                        <input
+                          type="text"
+                          list="cpu-options"
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                          placeholder="เช่น Intel Core i7-12700"
+                          value={formData.cpu || ''}
+                          onChange={(e) => setFormData({ ...formData, cpu: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">RAM (Memory)</label>
+                        <input
+                          type="text"
+                          list="ram-options"
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                          placeholder="เช่น 16GB DDR4"
+                          value={formData.ram || ''}
+                          onChange={(e) => setFormData({ ...formData, ram: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Storage (HDD/SSD)</label>
+                        <input
+                          type="text"
+                          list="storage-options"
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                          placeholder="เช่น 512GB NVMe SSD"
+                          value={formData.storage || ''}
+                          onChange={(e) => setFormData({ ...formData, storage: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Graphic Card (GPU)</label>
                         <input
                           type="text"
                           className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
-                          value={formData.serialNumber || ''}
-                          onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                          disabled // Already entered in general tab, just showing here
+                          placeholder="On-board / Nvidia RTX 3050"
+                          value={formData.gpu || ''}
+                          onChange={(e) => setFormData({ ...formData, gpu: e.target.value })}
                         />
-                        <p className="text-xs text-slate-400 mt-1">อ้างอิงจากข้อมูลทั่วไป</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Operating System</label>
+                        <input
+                          type="text"
+                          list="os-options"
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                          placeholder="Windows 11 Pro"
+                          value={formData.os || ''}
+                          onChange={(e) => setFormData({ ...formData, os: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">License Type (สถานะลิขสิทธิ์)</label>
+                        <input
+                          type="text"
+                          list="license-options"
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                          placeholder="เลือกหรือระบุสถานะลิขสิทธิ์"
+                          value={formData.licenseType || ''}
+                          onChange={(e) => setFormData({ ...formData, licenseType: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Product Key / License</label>
+                        <input
+                          type="text"
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none font-mono"
+                          placeholder="xxxxx-xxxxx-xxxxx-xxxxx"
+                          value={formData.productKey || ''}
+                          onChange={(e) => setFormData({ ...formData, productKey: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">MAC Address</label>
+                        <input
+                          type="text"
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none font-mono"
+                          placeholder="00:1B:44:11:3A:B7"
+                          value={formData.macAddress || ''}
+                          onChange={(e) => setFormData({ ...formData, macAddress: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">IP Address</label>
+                        <input
+                          type="text"
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none font-mono"
+                          placeholder="192.168.1.xxx"
+                          value={formData.ipAddress || ''}
+                          onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Simplified Specs for other types */}
+                  {formData.type !== AssetType.COMPUTER && (
+                    <div className="md:col-span-2 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">รายละเอียดเพิ่มเติม/หมายเหตุ (Specification Note)</label>
+                        <textarea
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none h-32"
+                          placeholder={`ระบุรายละเอียดทางเทคนิคสำหรับ ${formData.type}...`}
+                          value={formData.note || ''}
+                          onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                        ></textarea>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">Serial Number (S/N)</label>
+                          <input
+                            type="text"
+                            className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                            value={formData.serialNumber || ''}
+                            onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+                            disabled // Already entered in general tab, just showing here
+                          />
+                          <p className="text-xs text-slate-400 mt-1">อ้างอิงจากข้อมูลทั่วไป</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )
+            }
 
             {/* Location Tab */}
-            {activeTab === 'location' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">หน่วยงานที่รับผิดชอบ</label>
-                  <Select
-                    value={formData.department!}
-                    onChange={(val) => setFormData({ ...formData, department: val })}
-                    options={(settings.departments || []).map(dept => ({ label: dept, value: dept }))}
-                    placeholder="-- เลือกหน่วยงาน --"
-                  />
-                </div>
+            {
+              activeTab === 'location' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">หน่วยงานที่รับผิดชอบ</label>
+                    <Select
+                      value={formData.department!}
+                      onChange={(val) => setFormData({ ...formData, department: val })}
+                      options={(settings.departments || []).map(dept => ({ label: dept, value: dept }))}
+                      placeholder="-- เลือกหน่วยงาน --"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">สถานที่ติดตั้ง/จัดเก็บ</label>
-                  <input
-                    type="text"
-                    className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
-                    placeholder="ระบุห้องหรืออาคาร"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">สถานที่ติดตั้ง/จัดเก็บ</label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                      placeholder="ระบุห้องหรืออาคาร"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">ผู้ใช้งานปัจจุบัน (Custodian)</label>
-                  <input
-                    type="text"
-                    className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
-                    placeholder="ชื่อ-นามสกุล ข้าราชการ/พนักงาน"
-                    value={formData.currentUser}
-                    onChange={(e) => setFormData({ ...formData, currentUser: e.target.value })}
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">ผู้ใช้งานปัจจุบัน (Custodian)</label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                      placeholder="ชื่อ-นามสกุล ข้าราชการ/พนักงาน"
+                      value={formData.currentUser}
+                      onChange={(e) => setFormData({ ...formData, currentUser: e.target.value })}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            }
 
             {/* General Action Buttons */}
-            {activeTab !== 'maintenance' && (
-              <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate('/assets')}
-                  className="px-6 py-2.5 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 font-medium transition"
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 shadow-md flex items-center gap-2 transition"
-                >
-                  <Save size={18} /> บันทึกข้อมูล
-                </button>
-              </div>
-            )}
-          </form>
+            {
+              activeTab !== 'maintenance' && (
+                <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/assets')}
+                    className="px-6 py-2.5 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 font-medium transition"
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 shadow-md flex items-center gap-2 transition"
+                  >
+                    <Save size={18} /> บันทึกข้อมูล
+                  </button>
+                </div>
+              )
+            }
+          </form >
 
           {/* Maintenance Tab Content */}
-          {activeTab === 'maintenance' && isEditMode && (
-            <div className="animate-fade-in space-y-6">
-              <div className="flex justify-between items-center mb-4">
-                <div className="text-slate-800 font-medium text-lg">รายการซ่อมบำรุง ({maintenanceRecords.filter(r => r._uiStatus !== 'deleted').length})</div>
-                <button
-                  onClick={() => setShowAddMaintenance(!showAddMaintenance)}
-                  className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
-                >
-                  {showAddMaintenance ? <X size={18} /> : <Plus size={18} />}
-                  {showAddMaintenance ? 'ยกเลิก' : 'เพิ่มรายการซ่อม'}
-                </button>
-              </div>
-
-              {showAddMaintenance && (
-                <div className="bg-amber-50 rounded-xl p-6 border border-amber-100 mb-6 animate-slide-down">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-amber-900 mb-1">วันที่ดำเนินการ *</label>
-                      <input type="date" className="w-full border border-amber-200 rounded-lg p-2.5 bg-white" value={newMaintenance.date} onChange={(e) => setNewMaintenance({ ...newMaintenance, date: e.target.value })} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-amber-900 mb-1">ค่าใช้จ่าย</label>
-                      <input type="number" className="w-full border border-amber-200 rounded-lg p-2.5 bg-white" value={newMaintenance.cost} onChange={(e) => setNewMaintenance({ ...newMaintenance, cost: parseFloat(e.target.value) })} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-amber-900 mb-1">รายละเอียด *</label>
-                      <input type="text" className="w-full border border-amber-200 rounded-lg p-2.5 bg-white" value={newMaintenance.description} onChange={(e) => setNewMaintenance({ ...newMaintenance, description: e.target.value })} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-amber-900 mb-1">สถานะหลังซ่อม</label>
-                      <Select
-                        value={newMaintenance.resultingStatus!}
-                        onChange={(val) => setNewMaintenance({ ...newMaintenance, resultingStatus: val as AssetStatus })}
-                        options={Object.values(AssetStatus).map(s => ({
-                          label: s,
-                          value: s
-                        }))}
-                        placeholder="เลือกสถานะ"
-                      />
-                    </div>
-                  </div>
-                  <button onClick={handleAddMaintenance} className="mt-4 px-6 py-2 bg-amber-600 text-white rounded-lg">บันทึกรายการ</button>
+          {
+            activeTab === 'maintenance' && isEditMode && (
+              <div className="animate-fade-in space-y-6">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="text-slate-800 font-medium text-lg">รายการซ่อมบำรุง ({maintenanceRecords.filter(r => r._uiStatus !== 'deleted').length})</div>
+                  <button
+                    onClick={() => setShowAddMaintenance(!showAddMaintenance)}
+                    className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+                  >
+                    {showAddMaintenance ? <X size={18} /> : <Plus size={18} />}
+                    {showAddMaintenance ? 'ยกเลิก' : 'เพิ่มรายการซ่อม'}
+                  </button>
                 </div>
-              )}
 
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-sm text-slate-600">
-                  <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-3">วันที่</th>
-                      <th className="px-6 py-3">รายละเอียด</th>
-                      <th className="px-6 py-3 text-center">จัดการ</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {maintenanceRecords.map((record) => {
-                      // Determine Row Style based on UI Status
-                      let rowClass = 'hover:bg-slate-50 transition-colors';
-                      if (record._uiStatus === 'new') rowClass = 'bg-green-50 border-l-4 border-green-500';
-                      if (record._uiStatus === 'deleted') rowClass = 'bg-red-50 text-slate-400 opacity-75';
+                {showAddMaintenance && (
+                  <div className="bg-amber-50 rounded-xl p-6 border border-amber-100 mb-6 animate-slide-down">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-amber-900 mb-1">วันที่ดำเนินการ *</label>
+                        <input type="date" className="w-full border border-amber-200 rounded-lg p-2.5 bg-white" value={newMaintenance.date} onChange={(e) => setNewMaintenance({ ...newMaintenance, date: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-amber-900 mb-1">ค่าใช้จ่าย</label>
+                        <input type="number" className="w-full border border-amber-200 rounded-lg p-2.5 bg-white" value={newMaintenance.cost} onChange={(e) => setNewMaintenance({ ...newMaintenance, cost: parseFloat(e.target.value) })} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-amber-900 mb-1">รายละเอียด *</label>
+                        <input type="text" className="w-full border border-amber-200 rounded-lg p-2.5 bg-white" value={newMaintenance.description} onChange={(e) => setNewMaintenance({ ...newMaintenance, description: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-amber-900 mb-1">สถานะหลังซ่อม</label>
+                        <Select
+                          value={newMaintenance.resultingStatus!}
+                          onChange={(val) => setNewMaintenance({ ...newMaintenance, resultingStatus: val as AssetStatus })}
+                          options={Object.values(AssetStatus).map(s => ({
+                            label: s,
+                            value: s
+                          }))}
+                          placeholder="เลือกสถานะ"
+                        />
+                      </div>
+                    </div>
+                    <button onClick={handleAddMaintenance} className="mt-4 px-6 py-2 bg-amber-600 text-white rounded-lg">บันทึกรายการ</button>
+                  </div>
+                )}
 
-                      return (
-                        <tr key={record.id} className={rowClass}>
-                          <td className={`px-6 py-4 ${record._uiStatus === 'deleted' ? 'line-through' : ''}`}>
-                            <div className="flex items-center gap-2">
-                              {record.date}
-                              {record._uiStatus === 'new' && (
-                                <span className="text-[10px] bg-green-200 text-green-800 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                  <BadgeCheck size={10} /> NEW
-                                </span>
+                <div className="border border-slate-200 rounded-xl overflow-hidden">
+                  <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                      <tr>
+                        <th className="px-6 py-3">วันที่</th>
+                        <th className="px-6 py-3">รายละเอียด</th>
+                        <th className="px-6 py-3 text-center">จัดการ</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {maintenanceRecords.map((record) => {
+                        // Determine Row Style based on UI Status
+                        let rowClass = 'hover:bg-slate-50 transition-colors';
+                        if (record._uiStatus === 'new') rowClass = 'bg-green-50 border-l-4 border-green-500';
+                        if (record._uiStatus === 'deleted') rowClass = 'bg-red-50 text-slate-400 opacity-75';
+
+                        return (
+                          <tr key={record.id} className={rowClass}>
+                            <td className={`px-6 py-4 ${record._uiStatus === 'deleted' ? 'line-through' : ''}`}>
+                              <div className="flex items-center gap-2">
+                                {record.date}
+                                {record._uiStatus === 'new' && (
+                                  <span className="text-[10px] bg-green-200 text-green-800 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+                                    <BadgeCheck size={10} /> NEW
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className={`px-6 py-4 ${record._uiStatus === 'deleted' ? 'line-through' : ''}`}>
+                              {record.description}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              {record._uiStatus === 'deleted' ? (
+                                <button
+                                  onClick={() => restoreMaintenance(record.id)}
+                                  className="text-slate-500 hover:text-green-600 flex items-center justify-center gap-1 mx-auto"
+                                  title="คืนค่ารายการ"
+                                >
+                                  <RotateCcw size={16} /> <span className="text-xs">คืนค่า</span>
+                                </button>
+                              ) : (
+                                <button onClick={() => setDeleteId(record.id)} className="text-red-400 hover:text-red-600">
+                                  <Trash2 size={16} />
+                                </button>
                               )}
-                            </div>
-                          </td>
-                          <td className={`px-6 py-4 ${record._uiStatus === 'deleted' ? 'line-through' : ''}`}>
-                            {record.description}
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            {record._uiStatus === 'deleted' ? (
-                              <button
-                                onClick={() => restoreMaintenance(record.id)}
-                                className="text-slate-500 hover:text-green-600 flex items-center justify-center gap-1 mx-auto"
-                                title="คืนค่ารายการ"
-                              >
-                                <RotateCcw size={16} /> <span className="text-xs">คืนค่า</span>
-                              </button>
-                            ) : (
-                              <button onClick={() => setDeleteId(record.id)} className="text-red-400 hover:text-red-600">
-                                <Trash2 size={16} />
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
         </div>
-      </div >
+      </div>
       {/* Success Modal */}
       <SuccessModal
         isOpen={isSuccess}
@@ -1077,7 +1109,15 @@ const AssetForm: React.FC = () => {
         message="ระบบตรวจสอบข้อมูลและบันทึก ลงในฐานข้อมูลเรียบร้อยแล้ว"
       />
 
-    </div >
+      {/* Image Modal */}
+      <ImageModal
+        isOpen={isImageModalOpen}
+        imageUrl={previewImageUrl || (formData.imageUrl ? `http://${window.location.hostname}:3008${formData.imageUrl}` : '')}
+        onClose={() => setIsImageModalOpen(false)}
+        altText={formData.name}
+      />
+
+    </div>
   );
 };
 

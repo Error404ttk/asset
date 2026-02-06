@@ -106,7 +106,7 @@ export const AssetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const getAssetById = (id: string) => {
-    return assets.find(a => a.id === id);
+    return assets.find(a => String(a.id) === String(id));
   };
 
   const updateSettings = async (newSettings: Partial<SystemSettings>) => {

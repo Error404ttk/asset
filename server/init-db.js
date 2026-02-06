@@ -11,7 +11,7 @@ const initDb = async () => {
         id VARCHAR(36) PRIMARY KEY,
         asset_code VARCHAR(50) NOT NULL UNIQUE,
         name VARCHAR(255) NOT NULL,
-        type ENUM('COMPUTER', 'MONITOR', 'PRINTER', 'UPS', 'NETWORK', 'OTHER') NOT NULL,
+        type VARCHAR(100) NOT NULL,
         status ENUM('NORMAL', 'BROKEN', 'REPAIRING', 'SOLD', 'WITHDRAWN', 'WAIT_FOR_DISPOSAL') NOT NULL DEFAULT 'NORMAL',
         brand VARCHAR(100),
         model VARCHAR(100),
