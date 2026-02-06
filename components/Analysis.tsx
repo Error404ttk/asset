@@ -13,10 +13,12 @@ import {
     CheckCircle2,
     XCircle,
     AlertCircle,
-    RefreshCw
+    RefreshCw,
+    Printer // Added Printer icon
 } from 'lucide-react';
+import { Link } from 'react-router-dom'; // Added Link
 import { useAssets } from '../context/AssetContext';
-import { Asset, AssetStatus, AssetType } from '../types';
+import { Asset, AssetStatus, AssetType, AssetTypeLabels } from '../types'; // Added AssetTypeLabels
 
 const Analysis: React.FC = () => {
     const { assets } = useAssets();
@@ -27,6 +29,17 @@ const Analysis: React.FC = () => {
     const normalAssets = assets.filter(a => a.status === AssetStatus.NORMAL).length;
     const brokenAssets = assets.filter(a => a.status === AssetStatus.BROKEN).length;
     const repairingAssets = assets.filter(a => a.status === AssetStatus.REPAIRING).length;
+
+    // Helper for Asset Type Styling (Copied from AssetList for consistency)
+    const getAssetTypeStyle = (t: string) => {
+        const lower = t.toLowerCase();
+        if (lower.includes('คอมพิวเตอร์') || lower.includes('computer')) return 'bg-blue-50 text-blue-700 border-blue-200';
+        if (lower.includes('จอภาพ') || lower.includes('monitor')) return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+        if (lower.includes('เครื่องพิมพ์') || lower.includes('printer')) return 'bg-orange-50 text-orange-700 border-orange-200';
+        if (lower.includes('สำรองไฟ') || lower.includes('ups')) return 'bg-amber-50 text-amber-700 border-amber-200';
+        if (lower.includes('เครือข่าย') || lower.includes('network')) return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+        return 'bg-slate-100 text-slate-700 border-slate-200';
+    };
 
     // Age analysis (assets older than 5 years)
     const currentYear = new Date().getFullYear();
@@ -56,6 +69,7 @@ const Analysis: React.FC = () => {
     // Group by type
     const assetsByType = Object.values(AssetType).map(type => ({
         type,
+        label: AssetTypeLabels[type], // Use label for display
         count: assets.filter(a => a.type === type).length,
         broken: assets.filter(a => a.type === type && a.status === AssetStatus.BROKEN).length
     }));
@@ -111,43 +125,63 @@ const Analysis: React.FC = () => {
         </div>
     );
 
+    const handlePrint = () => {
+        window.print();
+    };
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 print:space-y-4">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">วิเคราะห์ ประเมิน และปรับปรุง</h1>
                     <p className="text-slate-500">วิเคราะห์สถานะครุภัณฑ์และวางแผนปรับปรุง</p>
                 </div>
 
-                {/* View Tabs */}
-                <div className="flex bg-slate-100 rounded-lg p-1 gap-1">
-                    {[
-                        { key: 'overview', label: 'ภาพรวม', icon: <BarChart3 size={16} /> },
-                        { key: 'age', label: 'วิเคราะห์อายุ', icon: <Clock size={16} /> },
-                        { key: 'maintenance', label: 'การบำรุงรักษา', icon: <Wrench size={16} /> },
-                        { key: 'recommendations', label: 'ข้อเสนอแนะ', icon: <Target size={16} /> }
-                    ].map(tab => (
-                        <button
-                            key={tab.key}
-                            onClick={() => setSelectedView(tab.key as any)}
-                            className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${selectedView === tab.key
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                    >
+                        <Printer size={16} />
+                        <span>พิมพ์รายงาน</span>
+                    </button>
+
+                    {/* View Tabs */}
+                    <div className="flex bg-slate-100 rounded-lg p-1 gap-1">
+                        {[
+                            { key: 'overview', label: 'ภาพรวม', icon: <BarChart3 size={16} /> },
+                            { key: 'age', label: 'วิเคราะห์อายุ', icon: <Clock size={16} /> },
+                            { key: 'maintenance', label: 'การบำรุงรักษา', icon: <Wrench size={16} /> },
+                            { key: 'recommendations', label: 'ข้อเสนอแนะ', icon: <Target size={16} /> }
+                        ].map(tab => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setSelectedView(tab.key as any)}
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${selectedView === tab.key
                                     ? 'bg-white text-primary-600 shadow-sm'
                                     : 'text-slate-600 hover:text-slate-800'
-                                }`}
-                        >
-                            {tab.icon}
-                            <span className="hidden sm:inline">{tab.label}</span>
-                        </button>
-                    ))}
+                                    }`}
+                            >
+                                {tab.icon}
+                                <span className="hidden sm:inline">{tab.label}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
+            </div>
+
+            {/* Print Header (Visible only on print) */}
+            <div className="hidden print:block text-center mb-6">
+                <h1 className="text-2xl font-bold text-slate-900">รายงานวิเคราะห์และประเมินสถานะครุภัณฑ์คอมพิวเตอร์</h1>
+                <p className="text-slate-600">ข้อมูล ณ วันที่ {new Date().toLocaleDateString('th-TH')}</p>
             </div>
 
             {/* Overview View */}
             {selectedView === 'overview' && (
                 <>
                     {/* Summary Stats */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
                         <StatCard
                             title="ครุภัณฑ์ทั้งหมด"
                             value={totalAssets}
@@ -178,9 +212,9 @@ const Analysis: React.FC = () => {
                     </div>
 
                     {/* Charts Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:grid-cols-2">
                         {/* By Type */}
-                        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+                        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 break-inside-avoid">
                             <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                                 <PieChart size={20} className="text-primary-500" />
                                 จำนวนตามประเภท
@@ -188,10 +222,10 @@ const Analysis: React.FC = () => {
                             <div className="space-y-3">
                                 {assetsByType.filter(t => t.count > 0).map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-3">
-                                        <div className="w-24 text-sm text-slate-600 truncate">{item.type}</div>
-                                        <div className="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden">
+                                        <div className="w-24 text-sm text-slate-600 truncate">{item.label || item.type}</div>
+                                        <div className="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden print:border print:border-slate-200">
                                             <div
-                                                className="bg-gradient-to-r from-primary-500 to-primary-400 h-full rounded-full flex items-center justify-end pr-2"
+                                                className="bg-gradient-to-r from-primary-500 to-primary-400 h-full rounded-full flex items-center justify-end pr-2 print:bg-slate-400"
                                                 style={{ width: `${Math.max((item.count / totalAssets) * 100, 10)}%` }}
                                             >
                                                 <span className="text-xs font-medium text-white">{item.count}</span>
@@ -208,7 +242,7 @@ const Analysis: React.FC = () => {
                         </div>
 
                         {/* By Department */}
-                        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+                        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 break-inside-avoid">
                             <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                                 <Activity size={20} className="text-indigo-500" />
                                 จำนวนตามหน่วยงาน (Top 5)
@@ -217,9 +251,9 @@ const Analysis: React.FC = () => {
                                 {assetsByDepartment.slice(0, 5).map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-3">
                                         <div className="w-32 text-sm text-slate-600 truncate">{item.department || 'ไม่ระบุ'}</div>
-                                        <div className="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden">
+                                        <div className="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden print:border print:border-slate-200">
                                             <div
-                                                className="bg-gradient-to-r from-indigo-500 to-indigo-400 h-full rounded-full flex items-center justify-end pr-2"
+                                                className="bg-gradient-to-r from-indigo-500 to-indigo-400 h-full rounded-full flex items-center justify-end pr-2 print:bg-slate-400"
                                                 style={{ width: `${Math.max((item.count / totalAssets) * 100, 10)}%` }}
                                             >
                                                 <span className="text-xs font-medium text-white">{item.count}</span>
@@ -279,28 +313,35 @@ const Analysis: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {oldAssets.slice(0, 15).map(asset => (
-                                        <tr key={asset.id} className="hover:bg-slate-50">
-                                            <td className="px-4 py-3 font-mono text-xs">{asset.assetCode}</td>
-                                            <td className="px-4 py-3 font-medium text-slate-800">{asset.name}</td>
-                                            <td className="px-4 py-3 text-slate-600">{asset.type}</td>
-                                            <td className="px-4 py-3 text-center">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getAssetAge(asset) >= 7 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
-                                                    }`}>
-                                                    {getAssetAge(asset)} ปี
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-center">
-                                                <span className={`px-2 py-1 rounded text-xs font-medium ${asset.status === AssetStatus.NORMAL ? 'bg-emerald-100 text-emerald-700' :
+                                    {oldAssets.slice(0, 15).map(asset => {
+                                        const displayType = AssetTypeLabels[asset.type] || asset.type;
+                                        return (
+                                            <tr key={asset.id} className="hover:bg-slate-50">
+                                                <td className="px-4 py-3 font-mono text-xs">{asset.assetCode}</td>
+                                                <td className="px-4 py-3 font-medium text-slate-800">{asset.name}</td>
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    <span className={`px-2 py-1 rounded text-xs font-medium border ${getAssetTypeStyle(displayType)}`}>
+                                                        {displayType}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getAssetAge(asset) >= 7 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                                                        }`}>
+                                                        {getAssetAge(asset)} ปี
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${asset.status === AssetStatus.NORMAL ? 'bg-emerald-100 text-emerald-700' :
                                                         asset.status === AssetStatus.BROKEN ? 'bg-red-100 text-red-700' :
                                                             'bg-slate-100 text-slate-600'
-                                                    }`}>
-                                                    {asset.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-slate-600">{asset.department}</td>
-                                        </tr>
-                                    ))}
+                                                        }`}>
+                                                        {asset.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-slate-600">{asset.department}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                             {oldAssets.length > 15 && (
@@ -447,9 +488,13 @@ const Analysis: React.FC = () => {
                                         <p className="text-sm text-slate-600">{rec.message}</p>
                                         <p className="text-xs text-slate-400 mt-1">หน่วยงาน: {rec.asset.department || 'ไม่ระบุ'}</p>
                                     </div>
-                                    <button className="text-primary-600 hover:text-primary-700 p-2 hover:bg-primary-50 rounded-lg transition-colors">
+                                    <Link
+                                        to={`/assets/${rec.asset.id}`}
+                                        className="text-primary-600 hover:text-primary-700 p-2 hover:bg-primary-50 rounded-lg transition-colors"
+                                        title="ดูรายละเอียด"
+                                    >
                                         <ArrowUpRight size={18} />
-                                    </button>
+                                    </Link>
                                 </div>
                             )) : (
                                 <div className="p-10 text-center text-slate-400 flex flex-col items-center gap-2">
