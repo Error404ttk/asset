@@ -3,7 +3,10 @@ import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import AssetList from './components/AssetList';
+import SupplyList from './components/SupplyList'; // Import SupplyList
 import AssetForm from './components/AssetForm';
+import HardwareList from './components/HardwareList';
+import SoftwareList from './components/SoftwareList';
 import AuditLog from './components/AuditLog';
 import Settings from './components/Settings';
 import Login from './components/Login';
@@ -40,6 +43,9 @@ const App: React.FC = () => {
             <Route path="/" element={<ProtectedLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="assets" element={<AssetList />} />
+              <Route path="supplies" element={<SupplyList />} /> {/* New Route */}
+              <Route path="hardware" element={<HardwareList />} />
+              <Route path="software" element={<SoftwareList />} />
               <Route path="assets/new" element={<AssetForm />} />
               <Route path="assets/:id" element={<AssetForm />} />
               <Route path="reports" element={<Reports />} />

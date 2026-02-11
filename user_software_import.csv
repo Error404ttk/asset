@@ -1,0 +1,5 @@
+Client,Computer type,Computer,Name,Publisher,Installation date,Size,Version,Group,IP address,Domain,Description
+Sarapee Hospital,Workstation,DESKTOP-7QIPVP8,Windows 10 Pro 64 bits Version 20H2,Microsoft Corporation,2026-01-28 23:34,10.1,10045.5047,AHRS,101.168.106.168,,
+Sarapee Hospital,Workstation,DESKTOP-7QIPVP8,AnyDesk,AnyDesk Software GmbH,2028-01-22,2097152,ad 9.0.10,AHRS,192.168.106.168,,
+Sarapee Hospital,Workstation,DESKTOP-7QIPVP8,Google Chrome,Google LLC,2026-01-20,,143.0.7499.19x,AHRS,192.168.106.168,,
+Sarapee Hospital,Workstation,DESKTOP-7QIPVP8,Microsoft Edge,Microsoft Corporation,2025-12-30,,143.0.3850.96,AHRS,192.168.106.168,,

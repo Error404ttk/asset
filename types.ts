@@ -25,7 +25,30 @@ export enum AssetType {
   UPS = 'UPS',
   NETWORK = 'NETWORK',
   SERVER = 'SERVER',
+  SOFTWARE = 'SOFTWARE',
   OTHER = 'OTHER'
+}
+
+export enum SoftwareCategory {
+  OS = 'Operation System',
+  APPLICATION = 'Application',
+  UTILITIES = 'Utilities',
+  SECURITY = 'Security & Antivirus',
+  PATCH = 'OS Patch / Update'
+}
+
+export enum LicenseType {
+  FREEWARE = 'Freeware',
+  OPEN_SOURCE = 'Open Source',
+  LICENSED = 'Licensed',
+  SUBSCRIPTION = 'Subscription',
+  POTENTIALLY_UNLICENSED = 'Potentially Unlicensed',
+  UNKNOWN = 'Unknown'
+}
+
+export enum BudgetType {
+  ASSET = 'ครุภัณฑ์',
+  SUPPLY = 'วัสดุ'
 }
 
 export const AssetTypeLabels: Record<AssetType, string> = {
@@ -35,6 +58,7 @@ export const AssetTypeLabels: Record<AssetType, string> = {
   [AssetType.UPS]: 'UPS',
   [AssetType.NETWORK]: 'อุปกรณ์เครือข่าย',
   [AssetType.SERVER]: 'Server',
+  [AssetType.SOFTWARE]: 'Software',
   [AssetType.OTHER]: 'อื่นๆ'
 };
 
@@ -56,10 +80,14 @@ export interface AssetLog {
   details: string;
 }
 
+
+
 export interface Asset {
   id: string;
   name: string;
   type: AssetType;
+  budgetType?: BudgetType; // Asset vs Supply
+  subtype?: string; // For Software Categories
   brand: string;
   model: string;
   serialNumber: string;
@@ -81,6 +109,7 @@ export interface Asset {
   macAddress?: string;
   hostname?: string;
   licenseType?: string;
+  rackUnit?: string; // U Size for Servers
 
   // Other Specs (Added for flexibility)
   displaySize?: string; // For Monitor

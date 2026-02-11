@@ -54,6 +54,19 @@ export const api = {
     return response.json();
   },
 
+  createAssetsBulk: async (assets: Partial<Asset>[]): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/assets/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(assets.map(a => ({ ...a, actionUser: getCurrentUsername() })))
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to bulk create assets');
+    }
+    return response.json();
+  },
+
   updateAsset: async (id: string, asset: Partial<Asset>): Promise<Asset> => {
     const response = await fetch(`${API_BASE_URL}/assets/${id}`, {
       method: 'PUT',
@@ -74,6 +87,18 @@ export const api = {
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.error || 'Failed to delete asset');
+    }
+  },
+
+  deleteAssetsBulk: async (ids: string[]): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/assets/delete-bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids, actionUser: getCurrentUsername() })
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to bulk delete assets');
     }
   },
 

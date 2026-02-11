@@ -22,9 +22,12 @@ const mapAssetFromDb = (row) => ({
     assetCode: row.asset_code,
     name: row.name,
     type: row.type,
+    budgetType: row.budget_type || 'ครุภัณฑ์',
+    subtype: row.subtype || '',
     status: row.status,
     brand: row.brand || '',
     model: row.model || '',
+    rackUnit: row.rack_unit || '',
     serialNumber: row.serial_number || '',
     fiscalYear: row.fiscal_year || '',
     location: row.location || '',
@@ -108,9 +111,11 @@ router.post('/', async (req, res) => {
         asset_code: sanitize(asset.assetCode),
         name: sanitize(asset.name),
         type: sanitize(asset.type),
+        subtype: sanitize(asset.subtype),
         status: sanitize(asset.status),
         brand: sanitize(asset.brand),
         model: sanitize(asset.model),
+        rack_unit: sanitize(asset.rackUnit),
         serial_number: sanitize(asset.serialNumber),
         fiscal_year: sanitize(asset.fiscalYear),
         location: sanitize(asset.location),
@@ -162,6 +167,96 @@ router.post('/', async (req, res) => {
     }
 });
 
+// CREATE multiple assets (Bulk)
+router.post('/bulk', async (req, res) => {
+    const assets = req.body;
+    if (!Array.isArray(assets) || assets.length === 0) {
+        return res.status(400).json({ error: 'Invalid or empty asset array' });
+    }
+    console.log(`📦 Bulk Creating ${assets.length} Assets`);
+
+    // Helper to map DB row from Asset object (strict column mapping)
+    const mapAssetToRow = (asset, newId) => {
+        return [
+            newId,
+            sanitize(asset.assetCode),
+            sanitize(asset.name),
+            sanitize(asset.type),
+            sanitize(asset.budgetType),
+            sanitize(asset.subtype),
+            sanitize(asset.status),
+            sanitize(asset.brand),
+            sanitize(asset.model),
+            sanitize(asset.rackUnit),
+            sanitize(asset.serialNumber),
+            sanitize(asset.fiscalYear),
+            sanitize(asset.location),
+            sanitize(asset.department),
+            sanitize(asset.currentUser),
+            sanitize(asset.imageUrl),
+            formatDateForDb(asset.acquiredDate),
+            formatDateForDb(asset.warrantyExpireDate),
+            sanitize(asset.cpu),
+            sanitize(asset.ram),
+            sanitize(asset.storage),
+            sanitize(asset.gpu),
+            sanitize(asset.os),
+            sanitize(asset.licenseType),
+            sanitize(asset.productKey),
+            sanitize(asset.ipAddress),
+            sanitize(asset.macAddress),
+            sanitize(asset.hostname),
+            sanitize(asset.displaySize),
+            sanitize(asset.wattage),
+            sanitize(asset.printType),
+            sanitize(asset.note),
+            sanitize(asset.replacedAssetId),
+            sanitize(asset.replacementAssetId),
+            sanitize(asset.disposalId),
+            formatDateForDb(asset.disposalDate)
+        ];
+    };
+
+    const columns = [
+        'id', 'asset_code', 'name', 'type', 'budget_type', 'subtype', 'status', 'brand', 'model', 'rack_unit', 'serial_number',
+        'fiscal_year', 'location', 'department', 'current_user', 'image_url', 'acquired_date',
+        'warranty_expire_date', 'cpu', 'ram', 'storage', 'gpu', 'os', 'license_type', 'product_key',
+        'ip_address', 'mac_address', 'hostname', 'display_size', 'wattage', 'print_type', 'note',
+        'replaced_asset_id', 'replacement_asset_id', 'disposal_id', 'disposal_date'
+    ];
+
+    let connection;
+    try {
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        const values = assets.map(asset => {
+            const newId = uuidv4();
+            return mapAssetToRow(asset, newId);
+        });
+
+        // Perform Bulk Insert
+        const sql = `INSERT INTO assets (${columns.map(c => `\`${c}\``).join(', ')}) VALUES ?`;
+        await connection.query(sql, [values]);
+
+        // Log bulk action (Single log entry to avoid spam)
+        const actionUser = assets[0].actionUser || 'System';
+        await connection.query('INSERT INTO asset_logs (asset_id, action, user, details) VALUES (?, ?, ?, ?)',
+            ['BULK', 'IMPORT', actionUser, `Imported ${assets.length} assets via CSV`]);
+
+        await connection.commit();
+        console.log(`✅ Automatically imported ${assets.length} items.`);
+        res.status(201).json({ message: `Successfully imported ${assets.length} assets` });
+
+    } catch (err) {
+        if (connection) await connection.rollback();
+        console.error('❌ Bulk Import Error:', err.message);
+        res.status(500).json({ error: err.message, sqlMessage: err.sqlMessage });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // UPDATE asset
 router.put('/:id', async (req, res) => {
     const asset = req.body;
@@ -170,9 +265,11 @@ router.put('/:id', async (req, res) => {
         asset_code: sanitize(asset.assetCode),
         name: sanitize(asset.name),
         type: sanitize(asset.type),
+        subtype: sanitize(asset.subtype),
         status: sanitize(asset.status),
         brand: sanitize(asset.brand),
         model: sanitize(asset.model),
+        rack_unit: sanitize(asset.rackUnit),
         serial_number: sanitize(asset.serialNumber),
         fiscal_year: sanitize(asset.fiscalYear),
         location: sanitize(asset.location),
@@ -309,6 +406,67 @@ router.delete('/:id', async (req, res) => {
         res.json({ message: 'Asset deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// BULK DELETE assets
+router.post('/delete-bulk', async (req, res) => {
+    const { ids, actionUser } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: 'Invalid or empty IDs array' });
+    }
+
+    console.log(`🗑️ Bulk Deleting ${ids.length} assets...`);
+
+    let connection;
+    try {
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // 1. Fetch assets to get image URLs and Names for logging
+        const placeholders = ids.map(() => '?').join(',');
+        const [assets] = await connection.query(`SELECT id, asset_code, name, image_url FROM assets WHERE id IN (${placeholders})`, ids);
+
+        if (assets.length === 0) {
+            await connection.commit();
+            return res.json({ message: 'No matching assets found to delete' });
+        }
+
+        // 2. Delete from DB
+        await connection.query(`DELETE FROM assets WHERE id IN (${placeholders})`, ids);
+
+        // 3. Log Action (Single log for bulk)
+        const user = actionUser || 'System';
+        await connection.query('INSERT INTO asset_logs (asset_id, action, user, details) VALUES (?, ?, ?, ?)',
+            ['BULK', 'DELETE', user, `Deleted ${assets.length} items via Bulk Action`]);
+
+        await connection.commit();
+
+        // 4. Cleanup Files (Async - doesn't block response)
+        // We do this AFTER commit to ensure DB consistency first
+        assets.forEach(asset => {
+            if (asset.image_url) {
+                const filePath = path.join(__dirname, '..', asset.image_url.startsWith('/') ? asset.image_url.slice(1) : asset.image_url);
+                if (fs.existsSync(filePath)) {
+                    try {
+                        fs.unlinkSync(filePath);
+                    } catch (e) {
+                        console.error(`Failed to delete file for asset ${asset.asset_code}:`, e.message);
+                    }
+                }
+            }
+        });
+
+        console.log(`✅ Bulk Deleted ${assets.length} items`);
+        res.json({ message: `Successfully deleted ${assets.length} items`, deletedCount: assets.length });
+
+    } catch (err) {
+        if (connection) await connection.rollback();
+        console.error('❌ Bulk Delete Error:', err);
+        res.status(500).json({ error: err.message });
+    } finally {
+        if (connection) connection.release();
     }
 });
 

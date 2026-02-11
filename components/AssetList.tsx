@@ -18,14 +18,15 @@ import {
   Lock,
   Maximize // Added Maximize icon for image zoom
 } from 'lucide-react';
-import { AssetStatus, AssetType, AssetStatusLabels, AssetTypeLabels } from '../types';
+import { AssetStatus, AssetType, AssetStatusLabels, AssetTypeLabels, BudgetType } from '../types';
 import { Link } from 'react-router-dom';
 import { useAssets } from '../context/AssetContext';
 import Select from './ui/Select';
-import ImageModal from './ui/ImageModal'; // Imported ImageModal
+import ImageModal from './ui/ImageModal';
+import Pagination from './ui/Pagination';
 
 const AssetList: React.FC = () => {
-  const { assets, deleteAsset, settings } = useAssets(); // Use Context
+  const { assets, deleteAsset, settings, deleteAssetsBulk } = useAssets(); // Use Context
   const [showQRModal, setShowQRModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
@@ -58,8 +59,66 @@ const AssetList: React.FC = () => {
     }
   };
 
+  // Bulk Delete Logic
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(new Set(filteredAssets.map(a => a.id)));
+      setSelectAll(true);
+    } else {
+      setSelectedIds(new Set());
+      setSelectAll(false);
+    }
+  };
+
+  const handleSelectOne = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+    setSelectAll(newSelected.size === filteredAssets.length && filteredAssets.length > 0);
+  };
+
+
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (window.confirm(`คุณแน่ใจหรือไม่ที่จะลบ ${selectedIds.size} รายการที่เลือก?`)) {
+      await deleteAssetsBulk(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      setSelectAll(false);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (filteredAssets.length === 0) return;
+    if (window.confirm(`⚠️ คุณแน่ใจหรือไม่ที่จะลบครุภัณฑ์ทั้งหมด ${filteredAssets.length} รายการที่แสดงอยู่?\n\nการกระทำนี้รวมถึงไฟล์รูปภาพและประวัติทั้งหมด!`)) {
+      if (window.confirm('ยืนยันครั้งสุดท้าย: ลบทั้งหมดจริงหรือไม่?')) {
+        await deleteAssetsBulk(filteredAssets.map(a => a.id));
+        setSelectedIds(new Set());
+        setSelectAll(false);
+      }
+    }
+  };
+
   // Filter Logic
   const filteredAssets = assets.filter(asset => {
+    // STRICT ASSET FILTER
+    // Return true only if BudgetType is ASSET (or undefined for backward compatibility)
+    // AND Type is NOT Software (Software has its own list)
+
+    // Check Budget Type
+    const bType = asset.budgetType || BudgetType.ASSET;
+    if (bType !== BudgetType.ASSET) return false;
+
+    // Check Type (Exclude Software)
+    if (asset.type === AssetType.SOFTWARE) return false;
+
     const matchesYear = filterYear ? asset.fiscalYear === filterYear : true;
     const matchesStatus = filterStatus ? asset.status === filterStatus : true;
     const matchesType = filterType ? (asset.type === filterType || AssetTypeLabels[asset.type] === filterType) : true;
@@ -71,6 +130,17 @@ const AssetList: React.FC = () => {
     return matchesYear && matchesStatus && matchesType && matchesSearch;
   });
 
+  // Pagination Logic
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filterYear, filterStatus, filterType, searchTerm]);
+
+  const paginatedAssets = filteredAssets.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   // Pre-calculate replaced asset IDs for locking
   const replacedAssetIds = new Set(assets.map(a => a.replacedAssetId).filter(Boolean));
 
@@ -78,8 +148,8 @@ const AssetList: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">ทะเบียนครุภัณฑ์ ({filterYear})</h1>
-          <p className="text-slate-500">จัดการและตรวจสอบรายการครุภัณฑ์แยกตามปีงบประมาณ</p>
+          <h1 className="text-2xl font-bold text-slate-800">ทะเบียนครุภัณฑ์ (Assets) ({filterYear})</h1>
+          <p className="text-slate-500">จัดการและตรวจสอบรายการครุภัณฑ์ (Assets) แยกตามปีงบประมาณ</p>
         </div>
         <Link
           to="/assets/new"
@@ -158,12 +228,58 @@ const AssetList: React.FC = () => {
         </div>
       </div>
 
+      {/* Bulk Actions */}
+      {(selectedIds.size > 0 || (filteredAssets.length > 0 && selectedIds.size > 0)) && (
+        <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-100 flex items-center justify-between animate-fade-in mb-4">
+          <div className="text-sm font-medium text-blue-800">
+            {selectedIds.size > 0
+              ? `เลือกอยู่ ${selectedIds.size} รายการ`
+              : `แสดงผลทั้งหมด ${filteredAssets.length} รายการ`}
+          </div>
+          <div className="flex gap-2">
+            {selectedIds.size > 0 ? (
+              <button
+                onClick={handleDeleteSelected}
+                className="flex items-center gap-2 px-3 py-1.5 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 shadow-sm transition-colors"
+              >
+                <Trash2 size={16} /> ลบที่เลือก
+              </button>
+            ) : (
+              /* Only show Delete All if explictly needed or maybe just Delete Selected is enough? */
+              /* Actually user wanted Delete All. Let's enable it if nothing select BUT we have items? */
+              /* In SoftwareList: viewMode === 'list' && selectedIds.size === 0 && filteredAssets.length > 0 */
+              null
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Actions Bar (Always visible if items exist, specific for Delete All) */}
+      {filteredAssets.length > 0 && selectedIds.size === 0 && (
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={handleDeleteAll}
+            className="flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-md text-sm transition-colors"
+          >
+            <Trash2 size={16} /> ลบทั้งหมด ({filteredAssets.length})
+          </button>
+        </div>
+      )}
+
       {/* Data Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600 min-w-[900px]">
             <thead className="bg-slate-50 text-slate-700 uppercase font-bold text-xs sticky top-0 z-10 shadow-sm">
               <tr>
+                <th className="px-4 py-4 w-10">
+                  <input
+                    type="checkbox"
+                    checked={selectAll && filteredAssets.length > 0}
+                    onChange={handleSelectAll}
+                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 w-4 h-4 cursor-pointer"
+                  />
+                </th>
                 <th className="px-6 py-4">รหัสครุภัณฑ์</th>
                 <th className="px-6 py-4">ปีงบฯ</th>
                 <th className="px-6 py-4">ชื่อรายการ</th>
@@ -175,11 +291,19 @@ const AssetList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredAssets.length > 0 ? (
-                filteredAssets.map((asset) => {
+              {paginatedAssets.length > 0 ? (
+                paginatedAssets.map((asset) => {
                   const isReplaced = replacedAssetIds.has(asset.id);
                   return (
-                    <tr key={asset.id} className={`hover: bg - slate - 50 transition - colors ${isReplaced ? 'bg-slate-50/50' : ''} `}>
+                    <tr key={asset.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.has(asset.id) ? 'bg-blue-50/50' : ''} ${isReplaced ? 'bg-slate-50/50' : ''}`}>
+                      <td className="px-4 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(asset.id)}
+                          onChange={() => handleSelectOne(asset.id)}
+                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 w-4 h-4 cursor-pointer"
+                        />
+                      </td>
                       <td className="px-6 py-4 font-mono font-medium text-primary-700">
                         {asset.assetCode}
                         {isReplaced && <Lock size={12} className="inline ml-2 text-slate-400" />}
@@ -283,14 +407,12 @@ const AssetList: React.FC = () => {
           </table>
         </div>
         {/* Pagination Mock */}
-        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
-          <span className="text-sm text-slate-500">แสดง {filteredAssets.length} รายการ</span>
-          <div className="flex gap-1">
-            <button className="px-3 py-1 border border-slate-200 rounded text-slate-500 hover:bg-slate-50 disabled:opacity-50" disabled>ก่อนหน้า</button>
-            <button className="px-3 py-1 bg-primary-600 text-white rounded">1</button>
-            <button className="px-3 py-1 border border-slate-200 rounded text-slate-500 hover:bg-slate-50">ถัดไป</button>
-          </div>
-        </div>
+        <Pagination
+          totalItems={filteredAssets.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* QR Code Modal Mock */}

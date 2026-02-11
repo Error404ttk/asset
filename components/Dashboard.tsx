@@ -23,7 +23,7 @@ import {
   Download,
   Loader
 } from 'lucide-react';
-import { StatCardProps, AssetStatus } from '../types';
+import { StatCardProps, AssetStatus, AssetType, BudgetType } from '../types';
 import { useAssets } from '../context/AssetContext';
 import Select from './ui/Select';
 
@@ -42,14 +42,26 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, colorClass, tre
 
 const Dashboard: React.FC = () => {
   const { assets, isLoading } = useAssets();
-  const [selectedYear, setSelectedYear] = useState('2568');
 
   // Dynamic Fiscal Years
   const currentYearBE = new Date().getFullYear() + 543;
   const fiscalYears = Array.from({ length: 6 }, (_, i) => currentYearBE + 1 - i);
 
+  const [selectedYear, setSelectedYear] = useState(currentYearBE.toString());
+
   // Calculate Real Stats based on Assets Context
-  const filteredAssets = assets.filter(a => a.fiscalYear === selectedYear);
+  // Filter to show only ASSETS (exclude SOFTWARE and SUPPLY types, matching AssetList behavior)
+  const filteredAssets = assets.filter(a => {
+    // Exclude Software (has its own SoftwareList page)
+    if (a.type === AssetType.SOFTWARE) return false;
+
+    // Only show items classified as ASSET budget type (exclude SUPPLY)
+    const bType = a.budgetType || BudgetType.ASSET;
+    if (bType !== BudgetType.ASSET) return false;
+
+    // Filter by selected fiscal year
+    return a.fiscalYear === selectedYear;
+  });
   const totalAssets = filteredAssets.length;
   const normalAssets = filteredAssets.filter(a => a.status === AssetStatus.NORMAL).length;
   const brokenAssets = filteredAssets.filter(a => a.status === AssetStatus.BROKEN).length;

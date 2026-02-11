@@ -15,7 +15,8 @@ import {
   LogOut,
   User,
   X,
-  TrendingUp
+  TrendingUp,
+  HardDrive
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -61,7 +62,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
-    { name: 'จัดการครุภัณฑ์', path: '/assets', icon: <Monitor size={20} /> },
+    { name: 'ทะเบียนครุภัณฑ์ (Assets)', path: '/assets', icon: <Monitor size={20} /> }, // Updated Name
+    { name: 'ทะเบียนวัสดุ (Supplies)', path: '/supplies', icon: <ArrowLeftRight size={20} /> }, // Added Supplies, moved hardware icon?
+    { name: 'ทะเบียน Software', path: '/software', icon: <FileText size={20} /> },
+
+    { name: 'ทะเบียน Hardware', path: '/hardware', icon: <HardDrive size={20} /> },
+    // Removed old 'hardware' and 'assets (total)'
     { name: 'รายงาน', path: '/reports', icon: <FileText size={20} /> },
     { name: 'การยืม-คืน', path: '/loans', icon: <ArrowLeftRight size={20} /> },
     { name: 'ประวัติการแก้ไข', path: '/audit-log', icon: <History size={20} /> },

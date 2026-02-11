@@ -30,6 +30,8 @@ interface AssetContextType {
   getAssetById: (id: string) => Asset | undefined;
   updateSettings: (newSettings: Partial<SystemSettings>) => Promise<void>;
   refreshData: () => Promise<void>;
+  addAssetsBulk: (assets: Asset[]) => Promise<void>;
+  deleteAssetsBulk: (ids: string[]) => Promise<void>;
 }
 
 const AssetContext = createContext<AssetContextType | undefined>(undefined);
@@ -84,6 +86,21 @@ export const AssetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+  const addAssetsBulk = async (newAssets: Asset[]) => {
+    try {
+      await api.createAssetsBulk(newAssets);
+      // For bulk, refreshing from server is safer/easier than merging state manually
+      // because we don't get all the FULL objects back easily without huge payload
+      // But we can optimistically add them if we trust the input.
+      // Given the logic, let's refresh.
+      await fetchData();
+      showToast(`Imported ${newAssets.length} assets successfully`, 'success');
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   const updateAsset = async (id: string, updatedAsset: Partial<Asset>) => {
     try {
       const result = await api.updateAsset(id, updatedAsset);
@@ -102,6 +119,18 @@ export const AssetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'ลบข้อมูลไม่สำเร็จ';
       showToast(msg, 'error');
+    }
+  };
+
+  const deleteAssetsBulk = async (ids: string[]) => {
+    try {
+      await api.deleteAssetsBulk(ids);
+      setAssets(prev => prev.filter(a => !ids.includes(a.id)));
+      showToast(`ลบข้อมูล ${ids.length} รายการเรียบร้อยแล้ว`, 'success');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'ลบข้อมูลไม่สำเร็จ';
+      showToast(msg, 'error');
+      fetchData();
     }
   };
 
@@ -132,7 +161,9 @@ export const AssetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       deleteAsset,
       getAssetById,
       updateSettings,
-      refreshData: fetchData
+      refreshData: fetchData,
+      addAssetsBulk,
+      deleteAssetsBulk
     }}>
       {children}
     </AssetContext.Provider>

@@ -1,0 +1,11 @@
+Client,Computer type,Computer,Name,Publisher,Installation date,Size,Version,Group,IP address,Domain,Description
+IT Dept,Desktop,PC-001,Microsoft Office 2021,Microsoft,01/01/2024,3.2GB,2021,Admin,192.168.1.10,company.local,Office Suite for productivity
+HR Dept,Server,SRV-001,Windows Server 2022,Microsoft,15/06/2023,5GB,2022 Standard,IT,192.168.1.5,company.local,Domain Controller
+Finance,Laptop,LT-005,Adobe Acrobat DC,Adobe,20/03/2024,1.5GB,DC 2024,Finance,192.168.1.25,company.local,PDF Editor and Creator
+IT Dept,Desktop,PC-002,Google Chrome,Google,10/02/2024,200MB,120.0,All Users,192.168.1.11,company.local,Web Browser
+Marketing,Desktop,PC-010,Adobe Photoshop,Adobe,05/04/2024,2.8GB,2024,Design,192.168.1.30,company.local,Image editing software
+IT Dept,Network,FW-001,Kaspersky Endpoint Security,Kaspersky,01/01/2024,500MB,11.8,IT,192.168.1.1,company.local,Antivirus protection
+Accounting,Desktop,PC-015,QuickBooks,Intuit,12/05/2023,1.2GB,2023,Finance,192.168.1.35,company.local,Accounting software
+IT Dept,Server,SRV-002,SQL Server 2022,Microsoft,20/07/2023,4GB,2022 Express,IT,192.168.1.6,company.local,Database server
+HR Dept,Desktop,PC-020,Zoom,Zoom Video,15/08/2024,150MB,5.17,All Users,192.168.1.40,company.local,Video conferencing
+IT Dept,Tool,UTIL-001,WinRAR,RARLab,01/01/2023,5MB,6.24,IT,,,File compression utility

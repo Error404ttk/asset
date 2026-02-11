@@ -18,11 +18,20 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Added Link
 import { useAssets } from '../context/AssetContext';
-import { Asset, AssetStatus, AssetType, AssetTypeLabels } from '../types'; // Added AssetTypeLabels
+import { Asset, AssetStatus, AssetType, AssetTypeLabels, BudgetType } from '../types'; // Added AssetTypeLabels
 
 const Analysis: React.FC = () => {
-    const { assets } = useAssets();
+    const { assets: allAssets } = useAssets();
     const [selectedView, setSelectedView] = useState<'overview' | 'age' | 'maintenance' | 'recommendations'>('overview');
+    const [filterBudgetType, setFilterBudgetType] = useState<BudgetType | 'ALL'>(BudgetType.ASSET); // Default to Asset (Cruphan)
+
+    // Filter Assets based on Budget Type
+    const assets = allAssets.filter(a => {
+        if (filterBudgetType === 'ALL') return true;
+        // Default to ASSET if undefined for backward compatibility
+        const bType = a.budgetType || BudgetType.ASSET;
+        return bType === filterBudgetType;
+    });
 
     // Calculate statistics
     const totalAssets = assets.length;
@@ -149,7 +158,17 @@ const Analysis: React.FC = () => {
                     <p className="text-slate-500">วิเคราะห์สถานะครุภัณฑ์และวางแผนปรับปรุง</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 print:hidden">
+                    <select
+                        className="border border-slate-200 rounded-lg p-2 text-sm font-medium focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+                        value={filterBudgetType}
+                        onChange={(e) => setFilterBudgetType(e.target.value as any)}
+                    >
+                        <option value={BudgetType.ASSET}>เฉพาะ ครุภัณฑ์ (Assets)</option>
+                        <option value={BudgetType.SUPPLY}>เฉพาะ วัสดุ (Supplies)</option>
+                        <option value="ALL">ทั้งหมด (All)</option>
+                    </select>
+
                     <button
                         onClick={handlePrint}
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"

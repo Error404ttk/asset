@@ -8,7 +8,8 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Routes
 const assetsRouter = require('./routes/assets');
@@ -22,6 +23,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/maintenance', require('./routes/maintenance'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/hardware', require('./routes/hardware'));
+app.use('/api/software', require('./routes/software'));
 
 // Serve static uploads
 app.use('/uploads', express.static('uploads'));

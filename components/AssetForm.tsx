@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { AssetType, AssetStatus, MaintenanceRecord, Asset, AssetTypeLabels, AssetStatusLabels } from '../types';
+import { Asset, AssetStatus, AssetStatusLabels, AssetType, AssetTypeLabels, SystemSettings, MaintenanceRecord, BudgetType, SoftwareCategory } from '../types';
 import SuccessModal from './SuccessModal';
-import { Save, X, Upload, Laptop, MapPin, FileText, Wrench, Plus, Trash2, Calendar, User, AlertTriangle, Monitor, Printer, Server, Wifi, Hash, RotateCcw, BadgeCheck, RefreshCcw, FileMinus, Maximize } from 'lucide-react';
+import { Save, X, Upload, Laptop, MapPin, FileText, Wrench, Plus, Trash2, Calendar, User, AlertTriangle, Monitor, Printer, Server, Wifi, Hash, RotateCcw, BadgeCheck, RefreshCcw, FileMinus, Maximize, Shield, Key } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAssets } from '../context/AssetContext';
 import { useToast } from '../context/ToastContext';
@@ -49,6 +49,7 @@ const AssetForm: React.FC = () => {
     status: AssetStatus.NORMAL,
     brand: '',
     model: '',
+    rackUnit: '',
     serialNumber: '',
     currentUser: '',
     department: settings.departments[0] || 'สำนักปลัด',
@@ -63,6 +64,7 @@ const AssetForm: React.FC = () => {
     productKey: '',
     macAddress: '',
     ipAddress: '',
+    subtype: '',
     licenseType: '',
     imageUrl: '',
   };
@@ -358,6 +360,7 @@ const AssetForm: React.FC = () => {
     if (typeStr === AssetType.PRINTER || typeStr === AssetTypeLabels[AssetType.PRINTER]) return <Printer size={18} />;
     if (typeStr === AssetType.NETWORK || typeStr === AssetTypeLabels[AssetType.NETWORK]) return <Wifi size={18} />;
     if (typeStr === AssetType.UPS || typeStr === AssetTypeLabels[AssetType.UPS]) return <Server size={18} />;
+    if (typeStr === AssetType.SOFTWARE || typeStr === AssetTypeLabels[AssetType.SOFTWARE]) return <Shield size={18} />;
     return <FileText size={18} />;
   };
 
@@ -653,6 +656,18 @@ const AssetForm: React.FC = () => {
                   )}
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">ประเภทงบประมาณ</label>
+                  <select
+                    className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                    value={formData.budgetType || BudgetType.ASSET}
+                    onChange={(e) => setFormData({ ...formData, budgetType: e.target.value as BudgetType })}
+                  >
+                    <option value={BudgetType.ASSET}>ครุภัณฑ์ (Asset)</option>
+                    <option value={BudgetType.SUPPLY}>วัสดุ (Supply)</option>
+                  </select>
+                </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-slate-800 mb-2">ประเภทและหมวดหมู่</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -803,8 +818,20 @@ const AssetForm: React.FC = () => {
                   </div>
 
                   {/* Conditional Fields based on Asset Type */}
-                  {(formData.type === AssetType.COMPUTER || formData.type === AssetTypeLabels[AssetType.COMPUTER]) && (
+                  {(formData.type === AssetType.COMPUTER || formData.type === AssetTypeLabels[AssetType.COMPUTER] || formData.type === AssetType.SERVER || formData.type === AssetTypeLabels[AssetType.SERVER]) && (
                     <>
+                      {(formData.type === AssetType.SERVER || (typeof formData.type === 'string' && formData.type.toLowerCase().includes('server'))) && (
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">ขนาดพื้นที่ (Rack Unit / Space)</label>
+                          <input
+                            type="text"
+                            className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                            placeholder="ระบุขนาด (เช่น 1U, 2U, Tower)"
+                            value={formData.rackUnit || ''}
+                            onChange={(e) => setFormData({ ...formData, rackUnit: e.target.value })}
+                          />
+                        </div>
+                      )}
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">CPU (Processor)</label>
                         <input
@@ -903,8 +930,65 @@ const AssetForm: React.FC = () => {
                     </>
                   )}
 
-                  {/* Simplified Specs for other types */}
-                  {formData.type !== AssetType.COMPUTER && (
+                  {/* Software Specs */}
+                  {(formData.type === AssetType.SOFTWARE || formData.type === AssetTypeLabels[AssetType.SOFTWARE]) && (
+                    <>
+                      <div className="md:col-span-2">
+                        <div className="bg-purple-50 p-4 rounded-lg text-purple-800 text-sm mb-4 border border-purple-100 flex items-center gap-2">
+                          <Shield size={16} /> บันทึกข้อมูลลิขสิทธิ์ซอฟต์แวร์
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">หมวดหมู่ (Category)</label>
+                        <Select
+                          value={formData.subtype || ''}
+                          onChange={(val) => setFormData({ ...formData, subtype: val })}
+                          options={Object.values(SoftwareCategory).map(c => ({ label: c, value: c }))}
+                          placeholder="เลือกหมวดหมู่ซอฟต์แวร์"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">License Type (ประเภทลิขสิทธิ์)</label>
+                        <Select
+                          value={formData.licenseType || ''}
+                          onChange={(val) => setFormData({ ...formData, licenseType: val })}
+                          options={[
+                            { label: 'Subscription (รายปี/รายเดือน)', value: 'Subscription' },
+                            { label: 'Perpetual (ซื้อขาด)', value: 'Perpetual' },
+                            { label: 'Freeware / Open Source', value: 'Freeware' },
+                            { label: 'OEM (ติดมากับเครื่อง)', value: 'OEM' },
+                            { label: 'Volume License', value: 'Volume' }
+                          ]}
+                          placeholder="เลือกประเภท License"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Product Key / Serial Number</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none font-mono pl-9"
+                            placeholder="xxxxx-xxxxx-xxxxx-xxxxx"
+                            value={formData.productKey || ''}
+                            onChange={(e) => setFormData({ ...formData, productKey: e.target.value })}
+                          />
+                          <Key size={16} className="absolute left-3 top-3 text-slate-400" />
+                        </div>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">รายละเอียดเพิ่มเติม / เงื่อนไขการใช้งาน</label>
+                        <textarea
+                          className="w-full border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-primary-500 outline-none h-24"
+                          placeholder="ระบุเงื่อนไขเพิ่มเติม เช่น จำนวน User ที่รองรับ, เว็บไซต์สำหรับ Activate..."
+                          value={formData.note || ''}
+                          onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                        ></textarea>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Simplified Specs for other types (Exclude Computer AND Software) */}
+                  {formData.type !== AssetType.COMPUTER && formData.type !== AssetType.SOFTWARE && formData.type !== AssetTypeLabels[AssetType.COMPUTER] && formData.type !== AssetTypeLabels[AssetType.SOFTWARE] && (
                     <div className="md:col-span-2 space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">รายละเอียดเพิ่มเติม/หมายเหตุ (Specification Note)</label>
